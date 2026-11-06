@@ -104,20 +104,31 @@ button{cursor:pointer}
 .ln{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--mark);pointer-events:none}
 .ln.sel{width:6px;margin-left:-3px;background:var(--mark);box-shadow:0 0 0 2px var(--surface),0 0 8px var(--mark);z-index:2}
 .ln.pl{width:4px;margin-left:-2px;background:var(--pull)}
+.tl.panmode{outline:2px solid var(--accent);cursor:grabbing}
+#zmwrap{display:inline-flex;align-items:center;gap:4px}
+#zmwrap[hidden]{display:none}
 .head{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);left:0;pointer-events:none;z-index:3}
 .box{position:absolute;top:0;bottom:0;pointer-events:none;z-index:4}
 .box.win{background:rgba(35,82,230,.25);border:2px solid var(--accent)}
 .box.cross{background:rgba(15,138,95,.25);border:2px dashed var(--good)}
 .legend{font-size:12px;color:var(--muted);margin-top:6px}
 .transport{display:flex;gap:5px;flex-wrap:nowrap;margin-top:8px}
+.transport.tpmain{margin-top:18px}
 .transport .btn{flex:1 1 0;min-width:0;padding:8px 2px;font-size:13px;white-space:nowrap;text-align:center}
 .hint{font-size:12px;color:var(--muted)}
 .row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .field{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .status{margin-top:10px;font-size:14px;min-height:22px}
-.adj{display:grid;grid-template-columns:48px 1fr;gap:6px 8px;align-items:center;margin:10px 0}
-.adj .btns{display:flex;gap:4px;flex-wrap:wrap}
-.adj .t{font-size:14px}
+.adj{display:flex;flex-direction:column;gap:4px;margin:4px 0 2px}
+.adjrow{display:flex;align-items:center;gap:4px;flex-wrap:nowrap}
+.adjrow .lbl{flex:0 0 auto;width:26px;font-size:13px;white-space:nowrap}
+.adjrow .tv{flex:0 0 auto;width:58px;font-size:13px;white-space:nowrap}
+.adjrow .btn{flex:1 1 0;min-width:0;padding:5px 0;font-size:11.5px;white-space:nowrap;text-align:center}
+.edtop{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:nowrap;margin:2px 0 4px}
+.edtop .ttl{min-width:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edtop .field{flex:0 0 auto;flex-wrap:nowrap;white-space:nowrap;font-size:12.5px;cursor:pointer;margin:0}
+#selwrap{margin-bottom:2px}
+#selwrap[hidden]{display:none}
 .lnbox{border:1px solid var(--mark);border-radius:6px;padding:10px;margin-bottom:12px}
 .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;overflow-y:auto}
 .item{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;align-items:center;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface);user-select:none;-webkit-user-select:none}
@@ -239,7 +250,8 @@ html:not(.freeon) .ctools .grip{display:none}
       <div class="toolbar">
         <button class="btn sm" id="selmode" type="button">선택 모드</button>
         <button class="btn sm" id="barnum" type="button">막대 번호: 원래</button>
-        <button class="btn sm" id="zoombtn" type="button" data-tip="막대를 확대해서 봅니다. 컷 범위: 첫 컷부터 마지막 컷 근처까지 / 반복 범위: 지금 반복하는 구간들만. 컷이 촘촘해서 편집이 어려울 때 쓰세요.">막대: 전체</button>
+        <button class="btn sm" id="zoombtn" type="button" data-tip="막대를 확대해서 봅니다. 확대: 재생 위치를 가운데에 두고 자른 구간 길이에 맞춰 자동으로 확대 (막대를 1초 이상 누른 채 좌우로 끌면 이동) / 컷 범위: 첫 컷부터 마지막 컷 근처까지 / 반복 범위: 지금 반복하는 구간들만. 컷이 촘촘해서 편집이 어려울 때 쓰세요.">막대: 전체</button>
+        <span class="field hint" id="zmwrap" hidden data-tip="확대 모드에서 한 화면에 보이는 폭입니다. 지금까지 자른 구간 길이의 중앙값 × 이 숫자만큼 보여줍니다."><button class="btn sm" id="zmminus" type="button">-</button><b class="mono" id="zm">6</b><button class="btn sm" id="zmplus" type="button">+</button>배</span>
         <button class="btn sm" id="fold" type="button">숨김 접기</button>
         <button class="btn sm" id="flip" type="button">좌우 반전</button>
       </div>
@@ -275,8 +287,10 @@ html:not(.freeon) .ctools .grip{display:none}
         <p class="hint" id="cutinfo" hidden></p>
         <p class="hint" id="pullinfo" hidden></p>
       </div>
+      <div class="editbar"><button class="subfold" id="selfold" type="button"><b id="selarrow">▲</b><span>선택한 구간 <span class="qm" data-tip="시작을 옮기면 앞 구간의 끝도 같이 움직이고, 구간끼리는 겹치지 않습니다. 첫 구간의 시작은 영상 처음, 마지막 구간의 끝은 영상 끝입니다. 색과 메모는 아래 구간 목록에서 고른 구간에 나옵니다.">?</span></span></button></div>
+      <div id="selwrap"><div id="editor"></div></div>
       </div>
-      <div class="transport">
+      <div class="transport tpmain">
         <button class="btn" data-seek="-10" type="button">-10초</button>
         <button class="btn" data-seek="-1" type="button">-1초</button>
         <button class="btn" data-seek="-0.1" type="button">-0.1초</button>
@@ -319,11 +333,6 @@ html:not(.freeon) .ctools .grip{display:none}
         </div>
         <div class="status" id="status"></div>
       </div>
-      </section>
-
-      <section class="card" data-fold="editor">
-        <button class="fold" type="button" aria-expanded="true"><i class="chev"></i><span>선택한 구간 <span class="qm" data-tip="시작을 옮기면 앞 구간의 끝도 같이 움직이고, 구간끼리는 겹치지 않습니다. 첫 구간의 시작은 영상 처음, 마지막 구간의 끝은 영상 끝입니다. 색과 메모는 아래 구간 목록에서 고른 구간에 나옵니다.">?</span></span></button>
-        <div class="fbody" id="editor"></div>
       </section>
 
       <section class="card" data-fold="list">
@@ -419,7 +428,7 @@ var mode='idle', cur=null, rep=0, stopAt=0, guardUntil=0, selId=null, lastMark=n
 var armReset=false, armBm=null, toastTimer=null;
 var selMode=false, msel=new Set(), selLine=null, pullMode=false;
 var undoSt=[], redoSt=[], lastSnap='';
-var spans=[], V=0;
+var spans=[], V=0, zDet=false, zC=0, zInfo=null, zLastT=0;
 function customView(){return !!(dur&&S&&prefs.sort==='custom'&&S.order.length)}
 var prefs=LS.get('looper:v1:prefs')||{};
 if(['orig','custom','both'].indexOf(prefs.barNum)<0)prefs.barNum='orig';
@@ -500,6 +509,24 @@ function buildMap(){
     var cx=0;
     S.order.forEach(function(id){var a=st(id),b=en(id);spans.push({a:a,b:b,x:cx,id:id});cx+=(b-a)});
     V=cx||dur;return;
+  }
+  zInfo=null;
+  if(!prefs.fold&&prefs.zoom==='auto'){
+    var cn=S.secs.length-1,L=30;
+    if(cn>=3){
+      var lens=[];for(var zi=0;zi<cn;zi++)lens.push(S.secs[zi+1].s-S.secs[zi].s);
+      lens.sort(function(a,b){return a-b});
+      var med=lens.length%2?lens[(lens.length-1)/2]:(lens[lens.length/2-1]+lens[lens.length/2])/2;
+      L=med*(prefs.zmult||6);
+    }
+    L=Math.max(2,L);
+    if(L<dur){
+      var zc=zDet?zC:curTime(),ws=zc-L/2;
+      if(ws<0)ws=0;
+      var we=ws+L;if(we>dur){we=dur;ws=Math.max(0,dur-L)}
+      zLastT=zc;zInfo={ws:ws,we:we,L:we-ws};
+      spans=[{a:ws,b:we,x:0}];V=we-ws;return;
+    }
   }
   if(!prefs.fold&&(prefs.zoom==='cuts'||prefs.zoom==='range')&&S.secs.length>1){
     var nS=S.secs.length,avg=(S.secs[nS-1].s-S.secs[0].s)/(nS-1)||1;
@@ -772,6 +799,7 @@ setInterval(function(){
 
 function updateClock(t){
   $('#now').textContent=fmt(t);
+  if(prefs.zoom==='auto'&&!zDet&&dur&&!tdrag&&zInfo&&Math.abs(t-zLastT)>=Math.max(0.02,zInfo.L/($('#tl').clientWidth||600)))renderTimeline();
   var h=$('#head');if(h&&dur)h.style.left='calc('+(t2f(t)*100)+'% - 1px)';
   if(!dur)return;
   var now=null;
@@ -933,7 +961,7 @@ function moveMid(id){
   var o=S.order,p=o.indexOf(id),r=rEnd();
   if(p<0)return;
   if(S.sm>0){
-    if(p>=S.sm){toast('소거 범위 밖 구간이에요');return}
+    if(p>=S.sm){o.splice(p,1);o.splice(S.sm,0,id);S.sm++;commit();toast('다시 넣었어요. 소거 범위 '+S.sm+'개');return}
     if(S.sm<=1){S.sm=0;stopMode(true);commit();toast('소거를 마쳤어요. 소거 모드를 껐어요');return}
     o.splice(p,1);o.splice(S.sm-1,0,id);S.sm--;
     commit();toast('소거했어요. 남은 범위 '+S.sm+'개');return;
@@ -1028,8 +1056,7 @@ function renderToolbar(){
   $('#flip').classList.toggle('on',!!S.flip);
   $('#fold').classList.toggle('on',prefs.fold);
   $('#fold').disabled=!hiddenCount();
-  $('#zoombtn').textContent='막대: '+({all:'전체',cuts:'컷 범위',range:'반복 범위'})[prefs.zoom||'all'];
-  $('#zoombtn').classList.toggle('on',!!prefs.zoom&&prefs.zoom!=='all');
+  zoomUi();
   $('#barnum').textContent='막대 번호: '+({orig:'원래',custom:'커스텀',both:'둘 다'})[prefs.barNum];
   $('#tl').classList.toggle('selmode',selMode);
   var sb=$('#selbar');sb.hidden=!selMode;
@@ -1070,6 +1097,7 @@ function renderTimeline(){
   S.secs.forEach(function(x,i){
     if(prefs.fold&&x.h)return;
     var a=x.s,b=en(x.id),fa=t2f(a),fb=t2f(b),pw=(fb-fa)*w,p=S.order.indexOf(x.id),lab='';
+    if(zInfo&&(b<=zInfo.ws||a>=zInfo.we))return;
     if(pw>=18&&!x.h){
       var o=onum(x.id);
       if(prefs.barNum==='orig')lab='<b>'+o+'</b>';
@@ -1081,10 +1109,18 @@ function renderTimeline(){
   });
   for(var k=1;k<S.secs.length;k++){
     if(prefs.fold&&S.secs[k].h&&S.secs[k-1].h)continue;
+    if(zInfo&&(S.secs[k].s<zInfo.ws||S.secs[k].s>zInfo.we))continue;
     h+='<i class="ln'+(S.secs[k].g?' pl':'')+(selLine===S.secs[k].id?' sel':'')+'" style="left:'+(t2f(S.secs[k].s)*100)+'%"></i>';
   }
   h+='<b class="head" id="head"></b>';
   tl.innerHTML=h;
+}
+function zoomUi(){
+  var z=prefs.zoom||'all',det=z==='auto'&&zDet;
+  $('#zoombtn').textContent=det?'현재 위치':'막대: '+({all:'전체',auto:'확대',cuts:'컷 범위',range:'반복 범위'})[z];
+  $('#zoombtn').classList.toggle('on',z!=='all');
+  $('#zmwrap').hidden=z!=='auto';
+  $('#zm').textContent=prefs.zmult||6;
 }
 function renderStatusBits(){
   $('#sval').textContent=smVal();
@@ -1117,13 +1153,13 @@ function updateStatus(){
 }
 function adjRow(label,which,disabled,val){
   var ds=[-10,-1,-0.1,0.1,1,10];
-  return '<div class="t">'+label+'</div><div><div class="mono t">'+(val==null?'-':fmt(val))+'</div><div class="btns">'+
+  return '<div class="adjrow"><span class="lbl">'+label+'</span><span class="mono tv">'+(val==null?'-':fmt(val))+'</span>'+
     ds.map(function(d){
       return '<button type="button" class="btn sm mono" data-adj="'+which+'" data-d="'+d+'"'+(disabled?' disabled':'')+'>'+(d>0?'+':'')+d+'</button>';
-    }).join('')+'</div></div>';
+    }).join('')+'</div>';
 }
 function shiftBox(){
-  return '<label class="field" style="cursor:pointer;margin:6px 0 6px" data-tip="켜면 시작·끝 버튼이 컷 선 전체를 한꺼번에 앞뒤로 움직입니다(구간 길이는 그대로)."><input type="checkbox" id="shiftall"'+(prefs.shiftAll?' checked':'')+'> <b>선 일괄 이동</b></label>';
+  return '<label class="field" data-tip="켜면 시작·끝 버튼이 컷 선 전체를 한꺼번에 앞뒤로 움직입니다(구간 길이는 그대로)."><input type="checkbox" id="shiftall"'+(prefs.shiftAll?' checked':'')+'> <b>선 일괄 이동</b></label>';
 }
 function renderEditor(){
   var el=$('#editor'),i=ix(selId),h='';
@@ -1140,8 +1176,7 @@ function renderEditor(){
   var title=hid?'<b>숨긴 구간</b> <span class="hint">번호 없음 · 길이 '+(b-a).toFixed(1)+'초</span>'
     :'<b>원래 '+onum(selId)+'번 · 커스텀 '+(p+1)+'번</b> <span class="hint">길이 '+(b-a).toFixed(1)+'초</span>';
   el.innerHTML=h+
-    '<div>'+title+'</div>'+
-    shiftBox()+
+    '<div class="edtop"><div class="ttl">'+title+'</div>'+shiftBox()+'</div>'+
     '<div class="adj">'+adjRow('시작','start',first&&!prefs.shiftAll,first?0:a)+adjRow('끝','end',last&&!prefs.shiftAll,last?dur:b)+'</div>'+
     (hid?'<div class="row2"><button type="button" class="btn sm primary" data-sel="unhide">숨김 해제</button></div>':'');
 }
@@ -1194,7 +1229,13 @@ function itemAct(id,act){
 function applyEditFold(){
   var f=!!prefs.editFold;
   $('#editwrap').hidden=f;$('#editarrow').textContent=f?'▼':'▲';
+  var sf=!!prefs.selFold;
+  $('#selwrap').hidden=sf;$('#selarrow').textContent=sf?'▼':'▲';
 }
+$('#selfold').addEventListener('click',function(e){
+  if(e.target.closest&&e.target.closest('.qm'))return;
+  prefs.selFold=!prefs.selFold;savePrefs();applyEditFold();
+});
 $('#editfold').addEventListener('click',function(){
   prefs.editFold=!prefs.editFold;savePrefs();applyEditFold();
   if(!prefs.editFold)render();
@@ -1291,8 +1332,12 @@ $('#rates').addEventListener('click',function(e){
 $('#flip').addEventListener('click',function(){S.flip=!S.flip;save();render()});
 $('#fold').addEventListener('click',function(){prefs.fold=!prefs.fold;savePrefs();render()});
 $('#zoombtn').addEventListener('click',function(){
-  var o=['all','cuts','range'];prefs.zoom=o[(o.indexOf(prefs.zoom||'all')+1)%3];savePrefs();render();
+  if(prefs.zoom==='auto'&&zDet){zDet=false;renderTimeline();zoomUi();return}
+  var o=['all','auto','cuts','range'];prefs.zoom=o[(o.indexOf(prefs.zoom||'all')+1)%4];zDet=false;savePrefs();render();
 });
+function zmCtl(d){var v=(prefs.zmult||6)+d;if(v<2||v>30)return;prefs.zmult=v;savePrefs();renderTimeline();zoomUi()}
+$('#zmminus').addEventListener('click',function(){zmCtl(-1)});
+$('#zmplus').addEventListener('click',function(){zmCtl(1)});
 $('#barnum').addEventListener('click',function(){
   var o=['orig','custom','both'];prefs.barNum=o[(o.indexOf(prefs.barNum)+1)%3];savePrefs();render();
 });
@@ -1369,6 +1414,7 @@ var tlEl=$('#tl'), tdrag=null;
 function hitLine(x,w,ptype){
   var thr=ptype==='touch'?16:10,best=-1,bd=thr+1;
   for(var k=1;k<S.secs.length;k++){
+    if(zInfo&&(S.secs[k].s<zInfo.ws||S.secs[k].s>zInfo.we))continue;
     var d=Math.abs(t2f(S.secs[k].s)*w-x);
     if(d<bd){bd=d;best=k}
   }
@@ -1389,13 +1435,29 @@ tlEl.addEventListener('pointerdown',function(e){
       selLine=S.secs[k].id;
     }
   }
+  if(tdrag.kind==='click'&&prefs.zoom==='auto'&&zInfo){
+    var td=tdrag;
+    td.timer=setTimeout(function(){
+      if(tdrag!==td||td.moved)return;
+      td.kind='pan';td.zc0=zDet?zC:curTime();
+      tlEl.classList.add('panmode');try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}
+    },1000);
+  }
   try{tlEl.setPointerCapture(e.pointerId)}catch(_){}
   e.preventDefault();
 });
 tlEl.addEventListener('pointermove',function(e){
   if(!tdrag||e.pointerId!==tdrag.pid)return;
   var r=tlEl.getBoundingClientRect(),x=Math.max(0,Math.min(r.width,e.clientX-r.left));
-  if(!tdrag.moved&&Math.abs(x-tdrag.x0)>4)tdrag.moved=true;
+  if(!tdrag.moved&&Math.abs(x-tdrag.x0)>4){tdrag.moved=true;if(tdrag.kind!=='pan'&&tdrag.timer){clearTimeout(tdrag.timer);tdrag.timer=null}}
+  if(tdrag.kind==='pan'){
+    if(!zInfo)return;
+    var cc=tdrag.zc0-(x-tdrag.x0)/r.width*zInfo.L;
+    zC=Math.max(0,Math.min(dur,cc));zDet=true;
+    renderTimeline();zoomUi();
+    var hh=$('#head');if(hh)hh.style.left='calc('+(t2f(curTime())*100)+'% - 1px)';
+    return;
+  }
   if(!tdrag.moved)return;
   if(tdrag.kind==='box'){
     var bx=$('#box');
@@ -1425,8 +1487,9 @@ tlEl.addEventListener('pointermove',function(e){
 });
 function endTl(e,cancel){
   if(!tdrag||e.pointerId!==tdrag.pid)return;
-  var d=tdrag;tdrag=null;
+  var d=tdrag;tdrag=null;if(d.timer)clearTimeout(d.timer);tlEl.classList.remove('panmode');
   try{tlEl.releasePointerCapture(e.pointerId)}catch(_){}
+  if(d.kind==='pan'){renderTimeline();zoomUi();return}
   var bx=$('#box');if(bx)bx.remove();
   var r=tlEl.getBoundingClientRect(),x=Math.max(0,Math.min(r.width,e.clientX-r.left));
   if(cancel){if(d.kind==='line'){S.secs[d.k].s=JSON.parse(lastSnap).secs[d.k].s}render();return}
@@ -1473,6 +1536,14 @@ function endTl(e,cancel){
   }
   render();
 }
+tlEl.addEventListener('wheel',function(e){
+  if(prefs.zoom!=='auto'||!zInfo)return;
+  if(!(e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)))return;
+  e.preventDefault();
+  var dx=Math.abs(e.deltaX)>0?e.deltaX:e.deltaY;
+  var c=(zDet?zC:curTime())+dx/(tlEl.clientWidth||600)*zInfo.L;
+  zC=Math.max(0,Math.min(dur,c));zDet=true;renderTimeline();zoomUi();
+},{passive:false});
 tlEl.addEventListener('pointerup',function(e){endTl(e,false)});
 tlEl.addEventListener('pointercancel',function(e){endTl(e,true)});
 window.addEventListener('resize',function(){if(S&&dur)renderTimeline()});
@@ -1780,6 +1851,17 @@ if(!prefs.folds||typeof prefs.folds!=='object')prefs.folds={};
 if(!prefs.part||typeof prefs.part!=='object')prefs.part={};
 applyEditFold();
 if(!prefs.link||typeof prefs.link!=='object')prefs.link={};
+/* 선택한 구간 카드는 컷 편집 안으로 들어갔으므로 예전 자유배치 기록에서 뺀다 */
+(function(){
+  var F=prefs.free&&prefs.free.cards;if(!F||!F.editor)return;
+  var ed=F.editor;
+  Object.keys(F).forEach(function(j){
+    if(j==='editor'||!F[j].att||F[j].att.to!=='editor')return;
+    if(ed.att){F[j].att={to:ed.att.to,side:ed.att.side,off:(ed.att.off||0)+(F[j].att.off||0)}}
+    else{F[j].x=ed.x;F[j].y=ed.y;delete F[j].att}
+  });
+  delete F.editor;savePrefs();
+})();
 function foldGroup(key){
   if(!prefs.link[key])return [key];
   var out={},q=[key];out[key]=true;
