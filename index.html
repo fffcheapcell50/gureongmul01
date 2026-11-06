@@ -175,6 +175,9 @@ html.tuning .ctools{display:flex}
 .cfb{padding-left:10px;padding-right:10px}
 .cutbox{margin:10px 0 4px}
 .editbar{margin:6px 0 8px}
+.syncst{border:0;background:none;color:var(--muted);font-size:12px;cursor:pointer;padding:4px 6px}
+.syncst.err{color:#ff7a7a}
+.syncbox{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
 .subfold{display:inline-flex;align-items:center;gap:8px;background:none;border:0;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;padding:4px 6px 4px 0;-webkit-tap-highlight-color:transparent}
 .subfold b{font-size:11px;width:14px;text-align:center}
 #editwrap[hidden]{display:none}
@@ -213,7 +216,7 @@ html:not(.freeon) .ctools .grip{display:none}
 </head>
 <body>
 <div class="wrap">
-  <div class="hbar"><h1>구간 그물</h1><button class="btn primary" id="linkbtn" type="button">링크</button></div>
+  <div class="hbar"><h1>구간 그물</h1><button class="btn primary" id="linkbtn" type="button">링크</button><button class="syncst" id="syncst" type="button" hidden data-tip="눌러서 지금 동기화합니다."></button></div>
   <form class="urlbar pop" id="urlform" hidden>
     <input id="url" type="text" inputmode="url" autocomplete="off" placeholder="유튜브 링크 또는 영상 ID">
     <button class="btn primary" type="submit">불러오기</button>
@@ -358,6 +361,19 @@ html:not(.freeon) .ctools .grip{display:none}
           <button class="btn sm primary" id="bkexp" type="button" data-tip="모든 영상의 편집, 북마크, 최근 영상 기록을 파일 하나로 내려받습니다. 폰과 컴퓨터 사이에 옮길 때 쓰세요.">전체 백업 내려받기</button>
           <button class="btn sm" id="bkimp" type="button" data-tip="백업 파일을 불러옵니다. 같은 영상에 양쪽 편집이 있으면 마지막 수정이 더 최근인 쪽이 남고, 다른 쪽은 북마크로 저장됩니다.">백업 불러오기</button>
           <input type="file" id="bkfile" accept=".json,application/json" hidden>
+        </div>
+        <div class="syncbox">
+          <div class="hint"><b>다른 기기와 동기화 (GitHub Gist)</b></div>
+          <div class="row2" id="synctokrow" style="margin-top:6px">
+            <input id="synctoken" type="password" autocomplete="off" placeholder="GitHub 토큰 붙여넣기" style="flex:1 1 160px;min-width:0;padding:8px 10px">
+            <button class="btn sm primary" id="syncconnect" type="button">연결</button>
+          </div>
+          <div class="row2" id="syncbtns" style="margin-top:6px" hidden>
+            <button class="btn sm primary" id="syncnow" type="button">지금 동기화</button>
+            <button class="btn sm" id="syncoff" type="button">동기화 끄기</button>
+            <button class="btn sm danger" id="syncdel" type="button">연결 해제</button>
+          </div>
+          <p class="hint" id="syncmsg"></p>
         </div>
         <details style="margin-top:10px">
           <summary class="hint">내보내기 / 가져오기</summary>
@@ -2426,31 +2442,136 @@ $('#bkfile').addEventListener('change',function(){
   fr.onload=function(){var o;try{o=JSON.parse(fr.result)}catch(e){toast('백업 파일을 읽을 수 없어요');return}importBackup(o)};
   fr.readAsText(f);
 });
-function importBackup(o){
-  if(!o||o.app!=='gureongmul'||!o.states){toast('이 앱의 백업 파일이 아니에요');return}
+function H(x){return JSON.stringify({s:x.secs,o:x.order,n:x.n,nx:x.nx||0,sm:x.sm||0,sc:x.sc||0})}
+function mergeBackup(o,base){
   var bms=LS.get('looper:v1:bookmarks')||[],have={};bms.forEach(function(b){have[b.id]=1});
-  var added=0,kept=0,took=0,bmAdd=0,rid=0;
-  function addBm(vid,name,state){bms.unshift({id:'b'+Date.now().toString(36)+(rid++),name:name,videoId:vid,savedAt:Date.now(),state:JSON.parse(JSON.stringify(state))});bmAdd++}
+  var res={added:0,kept:0,took:0,bmAdd:0,curChanged:false},rid=0;
+  function addBm(vid,name,state){bms.unshift({id:'b'+Date.now().toString(36)+(rid++),name:name,videoId:vid,savedAt:Date.now(),state:JSON.parse(JSON.stringify(state))});res.bmAdd++}
   var dt=new Date().toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'});
-  Object.keys(o.states).forEach(function(vid){
+  Object.keys(o.states||{}).forEach(function(vid){
     var inc=o.states[vid];if(!validState(inc))return;
-    var loc=LS.get('looper:v1:state:'+vid);
-    var hasLoc=validState(loc)&&loc.secs.length>1;
-    if(!hasLoc){LS.set('looper:v1:state:'+vid,inc);added++;return}
-    if(JSON.stringify({s:loc.secs,o:loc.order,n:loc.n})===JSON.stringify({s:inc.secs,o:inc.order,n:inc.n}))return;
-    if((inc.mt||0)>(loc.mt||0)){addBm(vid,'이전 편집 '+dt,loc);LS.set('looper:v1:state:'+vid,inc);took++}
-    else{addBm(vid,'가져온 편집 '+dt,inc);kept++}
+    var loc=LS.get('looper:v1:state:'+vid),hasLoc=validState(loc)&&loc.secs.length>1;
+    function take(){LS.set('looper:v1:state:'+vid,inc);if(vid===videoId)res.curChanged=true}
+    if(!hasLoc){take();res.added++;return}
+    var ih=H(inc),lh=H(loc);if(ih===lh)return;
+    if(base&&base[vid]!==undefined){
+      if(lh===base[vid]){take();res.took++;return}
+      if(ih===base[vid]){res.kept++;return}
+    }
+    if((inc.mt||0)>(loc.mt||0)){addBm(vid,'이전 편집 '+dt,loc);take();res.took++}
+    else{addBm(vid,'가져온 편집 '+dt,inc);res.kept++}
   });
-  (o.bookmarks||[]).forEach(function(b){if(b&&b.id&&b.videoId&&validState(b.state)&&!have[b.id]){bms.push(b);have[b.id]=1;bmAdd++}});
+  (o.bookmarks||[]).forEach(function(b){if(b&&b.id&&b.videoId&&validState(b.state)&&!have[b.id]){bms.push(b);have[b.id]=1;res.bmAdd++}});
   LS.set('looper:v1:bookmarks',bms);
   var r=getRecent(),seen={};r.forEach(function(x){seen[x.id]=1});
   (o.recent||[]).forEach(function(x){if(x&&x.id&&!seen[x.id]){r.push(x);seen[x.id]=1}});
   r.sort(function(a,b){return (b.at||0)-(a.at||0)});LS.set('looper:v1:recent',r.slice(0,20));
-  if(videoId&&videoId.indexOf('local:')!==0)loadVideo(videoId,'',true);
-  else{var sv=LS.get('looper:v1:state:'+videoId);if(validState(sv)){stopMode(true);S=sv;S.flip=!!S.flip;selId=S.order[0];resetHistory();render()}else render()}
-  renderBookmarks();
-  toast('새로 가져온 영상 '+added+'개 · 가져온 쪽이 최근이라 바꾼 영상 '+took+'개 · 이 기기 쪽이 최근이라 유지한 영상 '+kept+'개 · 북마크 '+bmAdd+'개 추가');
+  return res;
 }
+function reloadCurrent(){
+  if(!videoId)return;
+  if(videoId.indexOf('local:')!==0)loadVideo(videoId,'',true);
+  else{var sv=LS.get('looper:v1:state:'+videoId);if(validState(sv)){stopMode(true);S=sv;S.flip=!!S.flip;selId=S.order[0];resetHistory();render()}else render()}
+}
+function importBackup(o){
+  if(!o||o.app!=='gureongmul'||!o.states){toast('이 앱의 백업 파일이 아니에요');return}
+  var r=mergeBackup(o,null);
+  reloadCurrent();renderBookmarks();
+  toast('새로 가져온 영상 '+r.added+'개 · 가져온 쪽이 최근이라 바꾼 영상 '+r.took+'개 · 이 기기 쪽이 최근이라 유지한 영상 '+r.kept+'개 · 북마크 '+r.bmAdd+'개 추가');
+}
+
+/* GitHub Gist 동기화 */
+var SYNC_FILE='gureongmul-sync.json',SYNC_DESC='gureongmul-sync';
+var syncBusy=false,syncQ=false,syncTimer=null,syncErr='';
+function syncCfg(){var c=LS.get('looper:v1:sync');return c&&c.token&&c.gid?c:null}
+function gh(path,opt){
+  var cfg=LS.get('looper:v1:sync')||{};opt=opt||{};
+  opt.headers=Object.assign({'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'},opt.headers||{});
+  return fetch('https://api.github.com'+path,opt).then(function(r){
+    if(r.status===401)throw new Error('토큰이 올바르지 않아요');
+    if(r.status===403||r.status===404)throw new Error('접근할 수 없어요 (권한 또는 주소 확인)');
+    if(!r.ok)throw new Error('GitHub 오류 '+r.status);
+    return r.json();
+  });
+}
+function syncUi(){
+  var c=syncCfg(),el=$('#syncst'),box=$('#syncmsg');
+  var on=!!c&&!c.off;
+  el.hidden=!c;
+  el.textContent=!c?'':(c.off?'동기화 꺼짐':(syncBusy?'동기화 중…':(syncErr?'동기화 오류':'동기화됨 ✓')));
+  el.classList.toggle('err',!!syncErr);
+  $('#synctokrow').hidden=!!c;
+  $('#syncbtns').hidden=!c;
+  $('#syncoff').textContent=(c&&c.off)?'동기화 켜기':'동기화 끄기';
+  var when=c&&c.at?new Date(c.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}):'';
+  box.textContent=!c?'':(syncErr?('오류: '+syncErr):(when?('마지막 동기화 '+when):''));
+}
+function allLocalH(){
+  var b={};
+  for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);
+    if(k.indexOf('looper:v1:state:')===0){var v=LS.get(k);if(validState(v))b[k.slice(16)]=H(v)}}
+  return b;
+}
+function syncNow(){
+  var cfg=syncCfg();if(!cfg||cfg.off)return Promise.resolve();
+  if(syncBusy){syncQ=true;return Promise.resolve()}
+  syncBusy=true;syncErr='';syncUi();
+  var remoteTxt='',hadFile=false;
+  return gh('/gists/'+cfg.gid).then(function(g){
+    var f=g.files&&g.files[SYNC_FILE];hadFile=!!f;
+    if(!f)return '';
+    return f.truncated?fetch(f.raw_url).then(function(r){return r.text()}):f.content;
+  }).then(function(txt){
+    remoteTxt=txt||'';
+    var o=null;try{o=JSON.parse(remoteTxt)}catch(e){}
+    var res=(o&&o.app==='gureongmul')?mergeBackup(o,cfg.base||{}):null;
+    var local=buildBackup();
+    var fp=function(x){return JSON.stringify({s:x.states,b:x.bookmarks,r:x.recent})};
+    var same=false;try{same=o&&fp(o)===fp(local)}catch(e){}
+    var done=function(){
+      var c2=LS.get('looper:v1:sync')||cfg;c2.base=allLocalH();c2.at=Date.now();LS.set('looper:v1:sync',c2);
+      if(res&&res.curChanged)reloadCurrent();
+      if(res&&res.bmAdd)renderBookmarks();
+    };
+    if(same&&hadFile){done();return}
+    var files={};files[SYNC_FILE]={content:JSON.stringify(local)};
+    return gh('/gists/'+cfg.gid,{method:'PATCH',body:JSON.stringify({files:files})}).then(done);
+  }).catch(function(e){syncErr=e&&e.message||'알 수 없는 오류'}).then(function(){
+    syncBusy=false;syncUi();
+    if(syncQ){syncQ=false;setTimeout(syncNow,600)}
+  });
+}
+function schedulePush(){
+  if(!syncCfg()||syncBusy)return;
+  clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,4000);
+}
+(function(){
+  var raw=LS.set;
+  LS.set=function(k,v){raw(k,v);if(k.indexOf('looper:v1:state:')===0||k==='looper:v1:bookmarks')schedulePush()};
+})();
+$('#syncconnect').addEventListener('click',function(){
+  var tok=$('#synctoken').value.trim();if(!tok){toast('토큰을 붙여넣으세요');return}
+  LS.set('looper:v1:sync',{token:tok});
+  $('#syncmsg').textContent='연결 중…';
+  gh('/gists?per_page=100').then(function(list){
+    var f=list.filter(function(g){return g.description===SYNC_DESC&&g.files&&g.files[SYNC_FILE]})[0];
+    if(f)return f.id;
+    var files={};files[SYNC_FILE]={content:JSON.stringify(buildBackup())};
+    return gh('/gists',{method:'POST',body:JSON.stringify({description:SYNC_DESC,public:false,files:files})}).then(function(g){return g.id});
+  }).then(function(id){
+    LS.set('looper:v1:sync',{token:tok,gid:id,base:{}});$('#synctoken').value='';
+    toast('연결됐어요. 동기화를 시작합니다');syncUi();syncNow();
+  }).catch(function(e){LS.set('looper:v1:sync',null);syncErr=e.message;$('#syncmsg').textContent='오류: '+e.message;toast('연결하지 못했어요: '+e.message)});
+});
+$('#syncnow').addEventListener('click',function(){syncNow()});
+$('#syncoff').addEventListener('click',function(){var c=LS.get('looper:v1:sync');if(!c)return;c.off=!c.off;LS.set('looper:v1:sync',c);syncUi();if(!c.off)syncNow()});
+$('#syncdel').addEventListener('click',function(){
+  if(!confirm('이 기기의 동기화 연결(토큰)을 지울까요? Gist의 데이터는 그대로 남습니다.'))return;
+  LS.set('looper:v1:sync',null);syncErr='';syncUi();toast('연결을 해제했어요');
+});
+$('#syncst').addEventListener('click',function(){syncNow()});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')syncNow()});
+syncUi();setTimeout(syncNow,1500);
 
 /* 링크 창 + 실행취소 위치 */
 var hasQv=false;try{hasQv=!!parseId(new URLSearchParams(location.search).get('v'))}catch(e){}
