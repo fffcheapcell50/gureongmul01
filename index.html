@@ -2057,6 +2057,32 @@ function layoutFree(ov,noRes){
   gridEl.style.height=(mb+8)+'px';gridEl.style.minWidth=mr+'px';
   return R;
 }
+/* 다른 카드의 위쪽에 붙은 카드는 펼칠 때 위로 늘어나므로, 위 카드를 기준(고정)으로 하고 아래 카드를 그 밑에 붙이는 쪽으로 바꾼다 */
+function normTop(){
+  if(!freeOn()||!prefs.free.cards)return false;
+  var F=prefs.free.cards,ch=false,guard=0;
+  for(var again=true;again&&guard++<20;){
+    again=false;
+    var R=layoutFree(null,true);if(!R)return ch;
+    var ks=Object.keys(F);
+    for(var i=0;i<ks.length;i++){
+      var c=ks[i],a=F[c].att;
+      if(!(a&&a.side==='t'&&F[a.to]&&R[c]))continue;
+      var p=a.to,pa=F[p].att;
+      if(pa){F[c].att={to:pa.to,side:pa.side,off:pa.off||0}}
+      else{F[c].x=Math.round(R[c].x);F[c].y=Math.round(R[c].y);delete F[c].att}
+      var end=c,g=0,go=true;
+      while(go&&g++<30){go=false;Object.keys(F).forEach(function(j){if(!go&&j!==p&&j!==end&&F[j].att&&F[j].att.to===end&&F[j].att.side==='b'){end=j;go=true}})}
+      F[p].att={to:end,side:'b',off:0};
+      ch=true;again=true;break;
+    }
+  }
+  var R3=layoutFree(null,true),mx=0,my=0;
+  if(R3){Object.keys(R3).forEach(function(j){mx=Math.min(mx,R3[j].x);my=Math.min(my,R3[j].y)});
+    if(mx<0||my<0)Object.keys(F).forEach(function(j){if(!F[j].att){F[j].x-=mx;F[j].y-=my}});}
+  if(ch)savePrefs();
+  return ch;
+}
 function applyFreeClass(){
   var on=freeOn();
   gridEl.classList.toggle('free',on);
@@ -2249,6 +2275,7 @@ function endCardDrag(cancel){
     while(ch){ch=false;Object.keys(d.G).forEach(function(m){if(!sub[m]&&F[m]&&F[m].att&&sub[F[m].att.to]){sub[m]=true;ch=true}})}
     Object.keys(sub).forEach(function(m){F[m].w=tw});
   }
+  normTop();
   // 화면 왼쪽·위로 나간 카드는 전체를 밀어서 0 이상으로
   var R3=layoutFree(null,true),mx=0,my=0;
   Object.keys(R3).forEach(function(j){mx=Math.min(mx,R3[j].x);my=Math.min(my,R3[j].y)});
@@ -2261,8 +2288,8 @@ if(window.ResizeObserver){
   var _ro=new ResizeObserver(function(){if(!cdrag)layoutFree()});
   cardEls().forEach(function(c){_ro.observe(c)});
 }
-syncLinkBoxes();applyFreeClass();layoutFree();
-window.addEventListener('load',function(){layoutFree()});
+syncLinkBoxes();applyFreeClass();normTop();layoutFree();
+window.addEventListener('load',function(){normTop();layoutFree()});
 
 /* 컷 위치 복사 · 붙여넣기, 맞춤 모드 */
 function copyCuts(){
