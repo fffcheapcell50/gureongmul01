@@ -364,6 +364,7 @@ html:not(.freeon) .ctools .grip{display:none}
         <div class="row2">
           <input id="bmname" type="text" placeholder="북마크 이름" style="flex:1 1 160px;min-width:0;padding:8px 10px">
           <button class="btn primary" id="bmsave" type="button">지금 상태 저장</button>
+          <button class="btn danger" id="bmdelall" type="button" data-tip="🔒 잠근 북마크와 가장 최근 1개를 빼고 모두 삭제합니다.">전체 삭제</button>
         </div>
         <div id="bmlist" style="margin-top:8px"></div>
         <div class="row2" style="margin-top:10px">
@@ -1273,8 +1274,9 @@ function renderBookmarks(){
   $('#bmlist').innerHTML=bms.length?bms.map(function(b){
     var asking=armBm===b.id;
     return '<div class="bm" data-bm="'+esc(b.id)+'"><div class="name">'+esc(b.name)+'<small>'+esc(b.videoId)+' · 구간 '+b.state.secs.length+'개 · '+esc(new Date(b.savedAt).toLocaleDateString('ko-KR'))+'</small></div>'+
+      '<button type="button" class="btn sm'+(b.lock?' primary':'')+'" data-bmact="lock" title="잠그면 삭제되지 않아요" aria-pressed="'+(b.lock?'true':'false')+'">'+(b.lock?'🔒':'🔓')+'</button>'+
       '<button type="button" class="btn sm" data-bmact="load">열기</button>'+
-      '<button type="button" class="btn sm danger" data-bmact="del">'+(asking?'정말 삭제':'삭제')+'</button></div>';
+      '<button type="button" class="btn sm danger" data-bmact="del"'+(b.lock?' disabled':'')+'>'+(asking?'정말 삭제':'삭제')+'</button></div>';
   }).join(''):'<p class="hint">저장한 북마크가 없습니다.</p>';
 }
 
@@ -1372,20 +1374,22 @@ document.querySelectorAll('[data-shift]').forEach(function(b){
 var xlMode='copy';
 function applyExcel(text){
   var lines=String(text).replace(/\r/g,'').split('\n');
-  while(lines.length&&!lines[lines.length-1].trim())lines.pop();
+  if(lines.length&&lines[lines.length-1]==='')lines.pop();
   if(!lines.length){toast('붙여넣은 내용이 없어요');return}
   var ids=prefs.sort==='custom'?S.order.slice():S.secs.filter(function(g){return !g.h}).map(function(g){return g.id});
-  var n=Math.min(ids.length,lines.length);
+  var n=Math.min(ids.length,lines.length),blank=0;
   for(var k=0;k<n;k++){
     var cols=lines[k].split('\t').map(function(x){return x.trim()}),no='',nm='';
-    if(cols.length>=2&&/^\d+$/.test(cols[0])){no=cols[0];nm=cols[1]}else{nm=cols[0]}
     var g=S.secs[ix(ids[k])];
+    if(cols.every(function(x){return !x})){delete g.nm;delete g.no;delete g.m;blank++;continue}
+    if(cols.length>=2&&/^\d+$/.test(cols[0])){no=cols[0];nm=cols[1]}else{nm=cols[0]}
     if(nm)g.nm=nm;else delete g.nm;
     if(no)g.no=no;else delete g.no;
   }
   commit();
-  var extra=lines.length-n;
-  toast(n+'개 구간에 이름을 넣었어요 ('+(prefs.sort==='custom'?'커스텀순':'원래순')+' 기준)'+(extra>0?' · 구간이 모자라서 '+extra+'줄은 넣지 못했어요':''));
+  var extra=lines.length-n,where=' ('+(prefs.sort==='custom'?'커스텀순':'원래순')+' 기준)',more=extra>0?' · 구간이 모자라서 '+extra+'줄은 넣지 못했어요':'';
+  if(blank===n)toast(n+'개 구간의 이름·메모를 비웠어요'+where+more);
+  else toast((n-blank)+'개 구간에 이름을 넣었어요'+where+(blank?' · 빈 줄 '+blank+'개는 이름·메모를 비웠어요':'')+more);
 }
 $('#xlpaste').addEventListener('click',function(){
   xlMode='paste';
@@ -1393,7 +1397,7 @@ $('#xlpaste').addEventListener('click',function(){
     ta.hidden=false;ta.value='';ta.placeholder='엑셀에서 복사한 내용을 여기에 붙여넣으면 바로 적용됩니다';ta.focus();
   };
   try{navigator.clipboard.readText().then(function(t){
-    if(t&&t.trim()){ta.hidden=true;$('#xlhint').hidden=true;applyExcel(t)}else show();
+    if(t){ta.hidden=true;$('#xlhint').hidden=true;applyExcel(t)}else show();
   },show)}catch(e){show()}
 });
 $('#xlout').addEventListener('paste',function(){
@@ -1727,9 +1731,28 @@ $('#bmlist').addEventListener('click',function(e){
   var b=e.target.closest('[data-bmact]');if(!b)return;
   var id=b.closest('.bm').dataset.bm;
   if(b.dataset.bmact==='load'){loadBookmark(id);return}
+  if(b.dataset.bmact==='lock'){
+    var all=LS.get('looper:v1:bookmarks')||[],t=all.filter(function(x){return x.id===id})[0];
+    if(t){t.lock=!t.lock;t.la=Date.now();LS.set('looper:v1:bookmarks',all);armBm=null;renderBookmarks();toast(t.lock?'잠갔어요. 삭제되지 않아요':'잠금을 풀었어요')}
+    return;
+  }
   if(armBm!==id){armBm=id;renderBookmarks();return}
-  var bms=(LS.get('looper:v1:bookmarks')||[]).filter(function(x){return x.id!==id});
-  LS.set('looper:v1:bookmarks',bms);armBm=null;renderBookmarks();
+  delBms([id]);armBm=null;renderBookmarks();
+});
+function delBms(ids){
+  var set={};ids.forEach(function(i){set[i]=1});
+  var tomb=LS.get('looper:v1:bmdel')||{},now=Date.now();
+  ids.forEach(function(i){tomb[i]=now});
+  LS.set('looper:v1:bmdel',tomb);
+  LS.set('looper:v1:bookmarks',(LS.get('looper:v1:bookmarks')||[]).filter(function(x){return !set[x.id]}));
+}
+$('#bmdelall').addEventListener('click',function(){
+  var bms=LS.get('looper:v1:bookmarks')||[],newest=null;
+  bms.forEach(function(b){if(!newest||(b.savedAt||0)>(newest.savedAt||0))newest=b});
+  var del=bms.filter(function(b){return !b.lock&&b!==newest}).map(function(b){return b.id});
+  if(!del.length){toast('삭제할 북마크가 없어요 (잠근 것과 가장 최근 1개는 남겨요)');return}
+  if(!confirm('북마크 '+del.length+'개를 삭제할까요?\n잠근 북마크와 가장 최근 1개는 남아요. 클라우드에서도 같이 지워져요.'))return;
+  delBms(del);armBm=null;renderBookmarks();toast(del.length+'개를 삭제했어요');
 });
 $('#bmexport').addEventListener('click',function(){
   $('#io').value=JSON.stringify(LS.get('looper:v1:bookmarks')||[]);
@@ -2536,7 +2559,7 @@ function buildBackup(){
     var k=localStorage.key(i);
     if(k.indexOf('looper:v1:state:')===0){var v=LS.get(k);if(validState(v))states[k.slice(16)]=v}
   }
-  return {app:'gureongmul',ver:1,at:Date.now(),states:states,bookmarks:LS.get('looper:v1:bookmarks')||[],recent:getRecent()};
+  return {app:'gureongmul',ver:1,at:Date.now(),states:states,bookmarks:LS.get('looper:v1:bookmarks')||[],recent:getRecent(),bmdel:LS.get('looper:v1:bmdel')||{}};
 }
 $('#bkexp').addEventListener('click',function(){
   var obj=buildBackup(),n=Object.keys(obj.states).length;
@@ -2555,7 +2578,16 @@ function H(x){return JSON.stringify({s:x.secs,o:x.order,n:x.n,nx:x.nx||0,sm:x.sm
 function mergeBackup(o,base){
   var bms=LS.get('looper:v1:bookmarks')||[],have={};bms.forEach(function(b){have[b.id]=1});
   var res={added:0,kept:0,took:0,bmAdd:0,curChanged:false},rid=0;
-  function addBm(vid,name,state){bms.unshift({id:'b'+Date.now().toString(36)+(rid++),name:name,videoId:vid,savedAt:Date.now(),state:JSON.parse(JSON.stringify(state))});res.bmAdd++}
+  /* 지운 북마크 기록을 합치고, 지워진 북마크는 이 기기에서도 뺀다(잠근 것은 남김) */
+  var tomb=LS.get('looper:v1:bmdel')||{},tchg=false;
+  Object.keys(o.bmdel||{}).forEach(function(id){if(!tomb[id]){tomb[id]=o.bmdel[id];tchg=true}});
+  var keepBms=bms.filter(function(b){return !tomb[b.id]||b.lock});
+  if(keepBms.length!==bms.length){bms=keepBms;have={};bms.forEach(function(b){have[b.id]=1});res.bmAdd++}
+  function addBm(vid,name,state){
+    /* 자동으로 남기는 북마크는 같은 영상에서 최신 하나만 둔다 (잠근 것은 그대로) */
+    bms=bms.filter(function(b){if(b.auto&&b.videoId===vid&&!b.lock){tomb[b.id]=Date.now();tchg=true;return false}return true});
+    var nid='b'+Date.now().toString(36)+(rid++);
+    bms.unshift({id:nid,name:name,videoId:vid,savedAt:Date.now(),auto:true,state:JSON.parse(JSON.stringify(state))});have[nid]=1;res.bmAdd++}
   var dt=new Date().toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'});
   Object.keys(o.states||{}).forEach(function(vid){
     var inc=o.states[vid];if(!validState(inc))return;
@@ -2570,7 +2602,16 @@ function mergeBackup(o,base){
     if((inc.mt||0)>(loc.mt||0)){addBm(vid,'이전 편집 '+dt,loc);take();res.took++}
     else{addBm(vid,'가져온 편집 '+dt,inc);res.kept++}
   });
-  (o.bookmarks||[]).forEach(function(b){if(b&&b.id&&b.videoId&&validState(b.state)&&!have[b.id]){bms.push(b);have[b.id]=1;res.bmAdd++}});
+  (o.bookmarks||[]).forEach(function(b){
+    if(!b||!b.id||!b.videoId||!validState(b.state))return;
+    if(tomb[b.id])return;
+    if(!have[b.id]){bms.push(b);have[b.id]=1;res.bmAdd++;return}
+    var lb=bms.filter(function(x){return x.id===b.id})[0];
+    if(lb&&(b.la||0)>(lb.la||0)){lb.lock=!!b.lock;lb.la=b.la;res.bmAdd++}
+  });
+  var tk=Object.keys(tomb);
+  if(tk.length>500){tk.sort(function(a,b){return tomb[b]-tomb[a]}).slice(500).forEach(function(k){delete tomb[k]});tchg=true}
+  if(tchg)LS.set('looper:v1:bmdel',tomb);
   LS.set('looper:v1:bookmarks',bms);
   var r=getRecent(),seen={};r.forEach(function(x){seen[x.id]=1});
   (o.recent||[]).forEach(function(x){if(x&&x.id&&!seen[x.id]){r.push(x);seen[x.id]=1}});
@@ -2615,10 +2656,8 @@ function syncUi(){
   var when=c&&c.at?new Date(c.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'}):'';
   box.textContent=!c?'':(syncErr?('오류: '+syncErr):(when?('마지막 동기화 '+when):''));
 }
-function allLocalH(){
-  var b={};
-  for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);
-    if(k.indexOf('looper:v1:state:')===0){var v=LS.get(k);if(validState(v))b[k.slice(16)]=H(v)}}
+function baseOf(bk){
+  var b={};Object.keys(bk.states||{}).forEach(function(vid){if(validState(bk.states[vid]))b[vid]=H(bk.states[vid])});
   return b;
 }
 function syncNow(){
@@ -2635,10 +2674,11 @@ function syncNow(){
     var o=null;try{o=JSON.parse(remoteTxt)}catch(e){}
     var res=(o&&o.app==='gureongmul')?mergeBackup(o,cfg.base||{}):null;
     var local=buildBackup();
-    var fp=function(x){return JSON.stringify({s:x.states,b:x.bookmarks,r:x.recent})};
+    var fp=function(x){return JSON.stringify({s:x.states,b:x.bookmarks,r:x.recent,d:x.bmdel||{}})};
     var same=false;try{same=o&&fp(o)===fp(local)}catch(e){}
     var done=function(){
-      var c2=LS.get('looper:v1:sync')||cfg;c2.base=allLocalH();c2.at=Date.now();LS.set('looper:v1:sync',c2);
+      /* 기준은 "방금 클라우드에 올라간 내용"이어야 한다. 요청 중에 더 편집한 것은 아직 안 올라갔으므로 기준에 넣지 않는다 */
+      var c2=LS.get('looper:v1:sync')||cfg;c2.base=baseOf(local);c2.at=Date.now();LS.set('looper:v1:sync',c2);
       if(res&&res.curChanged)reloadCurrent();
       if(res&&res.bmAdd)renderBookmarks();
     };
@@ -2651,7 +2691,8 @@ function syncNow(){
   });
 }
 function schedulePush(){
-  if(!syncCfg()||syncBusy)return;
+  if(!syncCfg())return;
+  if(syncBusy){syncQ=true;return}
   clearTimeout(syncTimer);syncTimer=setTimeout(syncNow,4000);
 }
 (function(){
