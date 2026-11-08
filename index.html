@@ -83,7 +83,10 @@ button{cursor:pointer}
 .clock{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:12px 0 8px}
 .clock .big{font-size:28px;font-weight:500}
 .clock .sub{color:var(--muted);font-size:13px}
-.rates{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.rates{display:flex;gap:3px;margin-left:auto;flex-wrap:nowrap;justify-content:flex-end;min-width:0;max-width:100%}
+.rates .btn{flex:0 1 auto;min-width:0;padding:0 5px;font-size:11px;white-space:nowrap}
+@media (max-width:520px){.clock .rates{flex:1 1 100%;gap:2px}.rates .btn{flex:1 1 0;padding:0 1px;font-size:10px}}
+@media (min-width:521px){.clock .rates{flex:1 1 100%;gap:4px}.rates .btn{flex:1 1 0;padding:0 2px;font-size:12px}}
 .toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .tl{position:relative;height:var(--tlh,56px);background:var(--out);border-radius:6px;overflow:hidden;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
 .tl.selmode{cursor:crosshair;outline:2px dashed var(--accent);outline-offset:-2px}
@@ -421,7 +424,7 @@ var LS={
   get:function(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
   set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
-var RATES=[0.25,0.5,0.75,1,1.25,1.5];
+var RATES=[0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5];
 var CNAMES=['','빨강','노랑','초록'];
 var S=null, player=null, ready=false, apiReady=false, dur=0, videoId=null;
 var ytp=null, ytReady=false, src='yt', localUrl=null;
@@ -1329,7 +1332,9 @@ document.querySelectorAll('[data-seek]').forEach(function(b){
 });
 $('#rates').addEventListener('click',function(e){
   var b=e.target.closest('[data-rate]');if(!b)return;
-  S.rate=Number(b.dataset.rate);applyRate();save();renderRates();
+  var nr=Number(b.dataset.rate);
+  if(nr>2&&videoId&&videoId.indexOf('local:')!==0){toast('유튜브 영상은 2배까지만 돼요. 내 파일 영상은 2.5배까지 됩니다');return}
+  S.rate=nr;applyRate();save();renderRates();
 });
 $('#flip').addEventListener('click',function(){S.flip=!S.flip;save();render()});
 $('#fold').addEventListener('click',function(){prefs.fold=!prefs.fold;savePrefs();render()});
@@ -1771,6 +1776,47 @@ $('#bmimport').addEventListener('click',function(){
   LS.set('looper:v1:bookmarks',bms);renderBookmarks();toast(added+'개를 가져왔어요');
 });
 
+/* 구간 목록 단축키: 구간 목록 카드를 마지막으로 눌렀을 때만 켜진다 */
+var listActive=false,lastArrow={k:'',t:0};
+document.addEventListener('pointerdown',function(e){
+  var card=listEl.closest('section');
+  listActive=!!(card&&card.contains(e.target));
+},true);
+function listNav(d){
+  var ids=Array.prototype.map.call(listEl.querySelectorAll('.item'),function(el){return Number(el.dataset.id)});
+  if(!ids.length)return;
+  var i=ids.indexOf(selId),j=i<0?0:Math.max(0,Math.min(ids.length-1,i+d));
+  if(i>=0&&j===i)return;
+  var id=ids[j],pl=false;try{pl=!!ready&&player.getPlayerState()===1}catch(_){}
+  selId=id;selLine=null;render();
+  var li=listEl.querySelector('.item[data-id="'+id+'"]');if(li&&li.scrollIntoView)li.scrollIntoView({block:'nearest'});
+  if(!pl)return;
+  if(mode==='single')startSingle(id);else itemAct(id,'play');
+}
+function listRestart(){
+  if(!ready||!dur)return;
+  if((mode==='range'||mode==='single')&&cur!=null&&ix(cur)>=0){rep=0;playAt(st(cur));updateStatus();return}
+  if(selId!=null&&ix(selId)>=0){stopMode(true);preview(st(selId),en(selId));render()}
+}
+function listKey(e){
+  var c=e.code;
+  if(e.repeat&&c!=='ArrowUp')return false;
+  var okSel=S&&selId!=null&&S.order.indexOf(selId)>=0;
+  if(c==='KeyA'){listNav(-1)}
+  else if(c==='KeyD'){listNav(1)}
+  else if(c==='KeyW'){$('#pp').click()}
+  else if(c==='KeyS'){listRestart()}
+  else if(c==='KeyQ'){undo()}
+  else if(c==='KeyE'){redo()}
+  else if(c==='ArrowUp'){if(e.repeat)return true;$('#smode').click()}
+  else if(c==='ArrowDown'){if(okSel)itemAct(selId,'mid')}
+  else if(c==='ArrowLeft'||c==='ArrowRight'){
+    var now=Date.now(),dbl=lastArrow.k===c&&now-lastArrow.t<350;lastArrow={k:c,t:dbl?0:now};
+    if(okSel)itemAct(selId,c==='ArrowLeft'?(dbl?'front':'up'):(dbl?'back':'down'));
+  }
+  else return false;
+  return true;
+}
 document.addEventListener('keydown',function(e){
   var tag=(e.target.tagName||'').toLowerCase();
   if(tag==='input'||tag==='textarea'||tag==='select')return;
@@ -1781,6 +1827,7 @@ document.addEventListener('keydown',function(e){
     return;
   }
   if(e.metaKey||e.altKey)return;
+  if(listActive&&!e.shiftKey&&listKey(e)){e.preventDefault();return}
   if(e.key==='m'||e.key==='M'||e.key==='ㅡ'){e.preventDefault();mark()}
   else if(e.key===' '){e.preventDefault();$('#pp').click()}
   else if(e.key==='ArrowLeft'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()-1)}}
@@ -2592,9 +2639,13 @@ function mergeBackup(o,base){
   Object.keys(o.states||{}).forEach(function(vid){
     var inc=o.states[vid];if(!validState(inc))return;
     var loc=LS.get('looper:v1:state:'+vid),hasLoc=validState(loc)&&loc.secs.length>1;
-    function take(){LS.set('looper:v1:state:'+vid,inc);if(vid===videoId)res.curChanged=true}
+    var ih=H(inc),same=validState(loc)&&H(loc)===ih;
+    /* 같은 내용이면 아무것도 하지 않는다 (화면을 다시 불러오지도 않는다) */
+    function take(){if(same)return;LS.set('looper:v1:state:'+vid,inc);if(vid===videoId)res.curChanged=true}
     if(!hasLoc){take();res.added++;return}
-    var ih=H(inc),lh=H(loc);if(ih===lh)return;
+    var lh=H(loc);if(ih===lh)return;
+    /* 편집한 적 없는 빈 상태(구간 1개)는 실제 편집을 절대 덮어쓰지 못한다. 클라우드에도 이 기기 것이 올라가 바로잡힌다 */
+    if(inc.secs.length<=1){res.kept++;return}
     if(base&&base[vid]!==undefined){
       if(lh===base[vid]){take();res.took++;return}
       if(ih===base[vid]){res.kept++;return}
@@ -2619,9 +2670,13 @@ function mergeBackup(o,base){
   return res;
 }
 function reloadCurrent(){
+  /* 영상 플레이어는 다시 불러오지 않고 편집 내용만 바꾼다 (깜박이지 않고 재생도 이어진다) */
   if(!videoId)return;
-  if(videoId.indexOf('local:')!==0)loadVideo(videoId,'',true);
-  else{var sv=LS.get('looper:v1:state:'+videoId);if(validState(sv)){stopMode(true);S=sv;S.flip=!!S.flip;selId=S.order[0];resetHistory();render()}else render()}
+  var sv=LS.get('looper:v1:state:'+videoId);
+  if(validState(sv)){
+    if(S&&H(S)===H(sv))return;
+    stopMode(true);S=sv;S.flip=!!S.flip;selId=S.order[0];resetHistory();render();
+  }else render();
 }
 function importBackup(o){
   if(!o||o.app!=='gureongmul'||!o.states){toast('이 앱의 백업 파일이 아니에요');return}
@@ -2632,7 +2687,7 @@ function importBackup(o){
 
 /* GitHub Gist 동기화 */
 var SYNC_FILE='gureongmul-sync.json',SYNC_DESC='gureongmul-sync';
-var syncBusy=false,syncQ=false,syncTimer=null,syncErr='',noPush=false,qRuns=[];
+var syncBusy=false,syncQ=false,syncTimer=null,syncErr='',noPush=false,qRuns=[],reloadHits=[],syncHold=0;
 function syncCfg(){var c=LS.get('looper:v1:sync');return c&&c.token&&c.gid?c:null}
 function gh(path,opt){
   var cfg=LS.get('looper:v1:sync')||{};opt=opt||{};
@@ -2660,8 +2715,9 @@ function baseOf(bk){
   var b={};Object.keys(bk.states||{}).forEach(function(vid){if(validState(bk.states[vid]))b[vid]=H(bk.states[vid])});
   return b;
 }
-function syncNow(){
+function syncNow(force){
   var cfg=syncCfg();if(!cfg||cfg.off)return Promise.resolve();
+  if(force===true)syncHold=0;else if(Date.now()<syncHold)return Promise.resolve();
   if(syncBusy){syncQ=true;return Promise.resolve()}
   syncBusy=true;syncErr='';syncUi();
   var remoteTxt='',hadFile=false;
@@ -2679,7 +2735,11 @@ function syncNow(){
     var done=function(){
       /* 기준은 "방금 클라우드에 올라간 내용"이어야 한다. 요청 중에 더 편집한 것은 아직 안 올라갔으므로 기준에 넣지 않는다 */
       var c2=LS.get('looper:v1:sync')||cfg;c2.base=baseOf(local);c2.at=Date.now();LS.set('looper:v1:sync',c2);
-      if(res&&res.curChanged){noPush=true;try{reloadCurrent()}finally{noPush=false}}
+      if(res&&res.curChanged){
+        var tn=Date.now();reloadHits=reloadHits.filter(function(t){return tn-t<60000});reloadHits.push(tn);
+        if(reloadHits.length>=4){syncHold=tn+300000;reloadHits=[];toast('동기화로 편집이 계속 바뀌어서 5분 쉴게요. 필요하면 "지금 동기화"를 누르세요')}
+        noPush=true;try{reloadCurrent()}finally{noPush=false}
+      }
       if(res&&res.bmAdd)renderBookmarks();
     };
     if(same&&hadFile){done();return}
@@ -2718,13 +2778,13 @@ $('#syncconnect').addEventListener('click',function(){
     toast('연결됐어요. 동기화를 시작합니다');syncUi();syncNow();
   }).catch(function(e){LS.set('looper:v1:sync',null);syncErr=e.message;$('#syncmsg').textContent='오류: '+e.message;toast('연결하지 못했어요: '+e.message)});
 });
-$('#syncnow').addEventListener('click',function(){syncNow()});
-$('#syncoff').addEventListener('click',function(){var c=LS.get('looper:v1:sync');if(!c)return;c.off=!c.off;LS.set('looper:v1:sync',c);syncUi();if(!c.off)syncNow()});
+$('#syncnow').addEventListener('click',function(){syncNow(true)});
+$('#syncoff').addEventListener('click',function(){var c=LS.get('looper:v1:sync');if(!c)return;c.off=!c.off;LS.set('looper:v1:sync',c);syncUi();if(!c.off)syncNow(true)});
 $('#syncdel').addEventListener('click',function(){
   if(!confirm('이 기기의 동기화 연결(토큰)을 지울까요? Gist의 데이터는 그대로 남습니다.'))return;
   LS.set('looper:v1:sync',null);syncErr='';syncUi();toast('연결을 해제했어요');
 });
-$('#syncst').addEventListener('click',function(){syncNow()});
+$('#syncst').addEventListener('click',function(){syncNow(true)});
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')syncNow()});
 syncUi();setTimeout(syncNow,1500);
 
