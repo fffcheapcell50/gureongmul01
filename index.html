@@ -351,13 +351,13 @@ html:not(.freeon) .ctools .grip{display:none}
         <div class="ltools" id="ltools"></div>
         <ul class="list" id="list"></ul>
         <div class="row2" style="margin-top:8px">
-          <button class="btn sm primary" id="xlcopy" type="button" data-tip="원래 번호 순서대로 줄마다 커스텀 순번, 색, 메모가 복사됩니다.">엑셀용 복사</button>
+          <button class="btn sm primary" id="xlcopy" type="button" data-tip="원래 번호 순서대로 줄마다 원래순번, 커스텀순번, 이름, 색, 메모가 복사됩니다.">엑셀용 복사</button>
           <button class="btn sm" id="csvexp" type="button" data-tip="이 영상의 구간 목록을 CSV 파일로 내려받습니다. 엑셀에서 바로 열립니다. 지금 보는 순서(원래순/커스텀순)대로 저장됩니다.">CSV 내보내기</button>
-          <button class="btn sm primary" id="xlpaste" type="button" data-tip="엑셀에서 복사한 줄을 지금 목록 순서(원래순/커스텀순)대로 구간 이름에 넣습니다. 한 열이면 이름만, 두 열(번호, 이름)이면 번호도 같이 들어갑니다.">엑셀용 붙여넣기</button>
+          <button class="btn sm primary" id="xlpaste" type="button" data-tip="엑셀용 복사와 같은 모양(원래순번, 커스텀순번, 이름, 색, 메모)으로 붙여넣으면 원래순번으로 구간을 찾아 이름·순서·색·메모를 넣습니다. 붙여넣은 칸만 적용돼요. 한 열이면 지금 목록 순서대로 이름만 들어갑니다.">엑셀용 붙여넣기</button>
           <button class="btn danger sm" id="reset" type="button" data-tip="이 영상의 구간을 모두 지우고 처음부터 다시 시작합니다. 작업은 이 브라우저에 영상별로 자동 저장됩니다.">이 영상 처음부터 다시</button>
         </div>
         <textarea id="xlout" hidden placeholder="복사가 안 되면 여기서 직접 복사하세요 (Ctrl+A, Ctrl+C)"></textarea>
-        <p class="hint" id="xlhint" hidden>엑셀의 단어 옆 열에 붙여넣고, 붙여넣은 첫 열 기준으로 정렬하면 재생 순서가 됩니다.</p>
+        <p class="hint" id="xlhint" hidden>칸 순서: 원래순번, 커스텀순번, 이름, 색, 메모. 엑셀에서 이름을 고치거나 커스텀순번대로 정렬한 뒤 그대로 복사해 붙여넣으면 됩니다.</p>
       </div>
       </section>
 
@@ -553,6 +553,43 @@ function buildMap(){
   });
   if(!spans.length){spans=[{a:0,b:dur,x:0}];x=dur}
   V=x;
+  fspans=spans;fV=V;
+  /* 숨김 접기 + 확대: 접힌 막대(숨긴 구간을 뺀 길이) 위에서 현재 위치를 가운데로 확대한다 */
+  if(prefs.zoom==='auto'){
+    var ln=[],vis=S.secs.filter(function(g){return !g.h}),k2;
+    for(k2=0;k2<vis.length;k2++){var e2=en(vis[k2].id);if(e2<dur-1e-6||k2<vis.length-1)ln.push(e2-vis[k2].s)}
+    var FL=30;
+    if(ln.length>=3){ln.sort(function(a,b){return a-b});FL=(ln.length%2?ln[(ln.length-1)/2]:(ln[ln.length/2-1]+ln[ln.length/2])/2)*(prefs.zmult||6)}
+    FL=Math.max(2,FL);
+    if(FL<fV){
+      var zc2=zDet?zC:curTime(),fc=rf(zc2),wsx=fc-FL/2;
+      if(wsx<0)wsx=0;if(wsx>fV-FL)wsx=fV-FL;
+      var wex=wsx+FL,ns=[];
+      fspans.forEach(function(sp){
+        var ln2=sp.b-sp.a,a3=Math.max(sp.x,wsx),b3=Math.min(sp.x+ln2,wex);
+        if(b3>a3)ns.push({a:sp.a+(a3-sp.x),b:sp.a+(b3-sp.x),x:a3-wsx});
+      });
+      zLastT=zc2;zInfo={ws:fr(wsx),we:fr(wex),L:FL};
+      spans=ns.length?ns:[{a:0,b:dur,x:0}];V=FL;
+    }
+  }
+}
+var fspans=[],fV=0;
+/* 접힌 막대 좌표 <-> 실제 시간 */
+function rf(t){
+  for(var i=0;i<fspans.length;i++){var s=fspans[i];if(t<s.a)return s.x;if(t<=s.b)return s.x+t-s.a}
+  return fV;
+}
+function fr(x){
+  x=Math.max(0,Math.min(fV,x));
+  for(var i=0;i<fspans.length;i++){var s=fspans[i],len=s.b-s.a;if(x<=s.x+len+1e-9||i===fspans.length-1)return s.a+Math.max(0,Math.min(len,x-s.x))}
+  return 0;
+}
+/* 확대 중심을 막대 폭의 frac만큼 옮긴다 (접기를 켠 상태에서는 접힌 길이 기준) */
+function panCenter(zc0,frac){
+  var c;
+  if(prefs.fold&&fspans.length)c=fr(rf(zc0)+frac*zInfo.L);else c=zc0+frac*zInfo.L;
+  return Math.max(0,Math.min(dur,c));
 }
 function t2f(t){
   if(!dur||!V||!spans.length)return 0;
@@ -788,12 +825,30 @@ function advance(){
   playAt(st(cur));updateStatus();
 }
 
+var skipPrev=null;
+/* 일반 재생 중 숨긴 구간에 들어서면 그 끝으로 건너뛴다. 직접 눌러 이동한 곳은 그대로 재생한다 */
+function skipHid(t){
+  var prev=skipPrev;skipPrev=t;
+  if(!S||prev==null||t<prev||t-prev>1)return;
+  try{if(player.getPlayerState()!==1)return}catch(e){return}
+  for(var i=0;i<S.secs.length;i++){
+    var g=S.secs[i];if(!g.h)continue;
+    var a=g.s,b=en(g.id);
+    if(prev<a&&t>=a&&t<b){
+      var e=b,j=i+1;
+      while(j<S.secs.length&&S.secs[j].h){e=en(S.secs[j].id);j++}
+      if(e>=dur-0.05){skipPrev=null;try{player.seekTo(Math.max(0,dur-0.05),true);player.pauseVideo()}catch(_){}return}
+      skipPrev=e;guardUntil=performance.now()+300;player.seekTo(e,true);return;
+    }
+  }
+}
 setInterval(function(){
   if(!ready||!player)return;
   var t=0;try{t=player.getCurrentTime()||0}catch(e){return}
   if(!dur){dur=player.getDuration()||0;if(dur)render()}
   updateClock(t);
-  if(performance.now()<guardUntil)return;
+  if(performance.now()<guardUntil){skipPrev=null;return}
+  if(mode==='idle')skipHid(t);else skipPrev=null;
   if(mode==='preview'&&t>=stopAt-0.03){player.pauseVideo();mode='idle';updateStatus();return}
   if((mode==='range'||mode==='single')&&cur!=null&&ix(cur)>=0){
     var a=st(cur),b=en(cur);
@@ -1026,14 +1081,14 @@ function selByLen(le){
   toast(msel.size?('길이 '+th+'초 '+(le?'이하':'이상')+' 구간 '+msel.size+'개를 선택했어요'):('해당하는 구간이 없어요'));
 }
 
-/* 엑셀용 복사: 원래 번호 순서대로 줄마다 커스텀 순번, 색, 메모 */
+/* 엑셀용 복사: 원래 번호 순서대로 줄마다 원래순번, 커스텀순번, 이름, 색, 메모 */
 function excelText(){
   var lines=[];
   S.secs.forEach(function(sg){
     if(sg.h)return;
     var p=S.order.indexOf(sg.id)+1;
     var memo=(sg.m||'').replace(/[\t\r\n]+/g,' ');
-    lines.push(p+'\t'+CNAMES[sg.c||0]+'\t'+memo+'\t'+(sg.nm||'').replace(/[\t\r\n]+/g,' '));
+    lines.push(onum(sg.id)+'\t'+p+'\t'+(sg.nm||'').replace(/[\t\r\n]+/g,' ')+'\t'+CNAMES[sg.c||0]+'\t'+memo);
   });
   return lines.join('\n');
 }
@@ -1381,13 +1436,43 @@ function applyExcel(text){
   var lines=String(text).replace(/\r/g,'').split('\n');
   if(lines.length&&lines[lines.length-1]==='')lines.pop();
   if(!lines.length){toast('붙여넣은 내용이 없어요');return}
+  var rows=lines.map(function(l){return l.split('\t').map(function(x){return x.trim()})});
+  /* 새 모양: 모든 줄이 (원래순번, 커스텀순번, ...)으로 시작하면 원래순번으로 구간을 찾아 넣는다 */
+  var isNew=rows.every(function(c){return c.length>=3&&/^\d+$/.test(c[0])&&/^\d+$/.test(c[1])});
+  if(isNew){
+    var byNo={};S.secs.forEach(function(g){if(!g.h)byNo[onum(g.id)]=g.id});
+    var width=Math.max.apply(null,rows.map(function(c){return c.length})),hit=[],miss=0;
+    rows.forEach(function(c){
+      var id=byNo[Number(c[0])];if(id==null){miss++;return}
+      var g=S.secs[ix(id)];
+      if(c[2])g.nm=c[2];else delete g.nm;
+      if(width>=4){var ci=CNAMES.indexOf(c[3]||'');if(c[3]===''||ci>=0){if(ci>0)g.c=ci;else delete g.c}}
+      if(width>=5){if(c[4])g.m=c[4];else delete g.m}
+      hit.push({id:id,pos:Number(c[1]),k:hit.length});
+    });
+    if(!hit.length){toast('원래순번과 맞는 구간이 없어요');return}
+    /* 커스텀순번대로 재생 순서를 바꾼다: 붙여넣은 구간들이 차지하던 자리에 순번 순서로 다시 채운다 */
+    var set={};hit.forEach(function(h){set[h.id]=1});
+    var sorted=hit.slice().sort(function(a,b){return a.pos-b.pos||a.k-b.k}).map(function(h){return h.id});
+    var q=0,changed=false;
+    S.order=S.order.map(function(id){if(!set[id])return id;var nid=sorted[q++];if(nid!==id)changed=true;return nid});
+    commit();
+    toast(hit.length+'개 구간에 반영했어요 (원래순번 기준)'+(changed?' · 커스텀 순서도 바꿨어요':'')+(miss?' · 맞는 구간이 없는 '+miss+'줄은 건너뛰었어요':''));
+    return;
+  }
   var ids=prefs.sort==='custom'?S.order.slice():S.secs.filter(function(g){return !g.h}).map(function(g){return g.id});
   var n=Math.min(ids.length,lines.length),blank=0;
   for(var k=0;k<n;k++){
     var cols=lines[k].split('\t').map(function(x){return x.trim()}),no='',nm='';
     var g=S.secs[ix(ids[k])];
     if(cols.every(function(x){return !x})){delete g.nm;delete g.no;delete g.m;blank++;continue}
-    if(cols.length>=2&&/^\d+$/.test(cols[0])){no=cols[0];nm=cols[1]}else{nm=cols[0]}
+    if(cols.length>=4&&/^\d+$/.test(cols[0])&&(cols[1]===''||CNAMES.indexOf(cols[1])>0)){
+      /* 예전 내보내기 모양: 커스텀순번, 색, 메모, 이름 */
+      nm=cols[3];
+      var oc=CNAMES.indexOf(cols[1]);if(oc>0)g.c=oc;else delete g.c;
+      if(cols[2])g.m=cols[2];else delete g.m;
+    }
+    else if(cols.length>=2&&/^\d+$/.test(cols[0])){no=cols[0];nm=cols[1]}else{nm=cols[0]}
     if(nm)g.nm=nm;else delete g.nm;
     if(no)g.no=no;else delete g.no;
   }
@@ -1461,8 +1546,7 @@ tlEl.addEventListener('pointermove',function(e){
   if(!tdrag.moved&&Math.abs(x-tdrag.x0)>4){tdrag.moved=true;if(tdrag.kind!=='pan'&&tdrag.timer){clearTimeout(tdrag.timer);tdrag.timer=null}}
   if(tdrag.kind==='pan'){
     if(!zInfo)return;
-    var cc=tdrag.zc0-(x-tdrag.x0)/r.width*zInfo.L;
-    zC=Math.max(0,Math.min(dur,cc));zDet=true;
+    zC=panCenter(tdrag.zc0,-(x-tdrag.x0)/r.width);zDet=true;
     renderTimeline();zoomUi();
     var hh=$('#head');if(hh)hh.style.left='calc('+(t2f(curTime())*100)+'% - 1px)';
     return;
@@ -1550,8 +1634,7 @@ tlEl.addEventListener('wheel',function(e){
   if(!(e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)))return;
   e.preventDefault();
   var dx=Math.abs(e.deltaX)>0?e.deltaX:e.deltaY;
-  var c=(zDet?zC:curTime())+dx/(tlEl.clientWidth||600)*zInfo.L;
-  zC=Math.max(0,Math.min(dur,c));zDet=true;renderTimeline();zoomUi();
+  zC=panCenter(zDet?zC:curTime(),dx/(tlEl.clientWidth||600));zDet=true;renderTimeline();zoomUi();
 },{passive:false});
 tlEl.addEventListener('pointerup',function(e){endTl(e,false)});
 tlEl.addEventListener('pointercancel',function(e){endTl(e,true)});
