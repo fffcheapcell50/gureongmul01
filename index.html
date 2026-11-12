@@ -277,7 +277,7 @@ html:not(.freeon) .ctools .grip{display:none}
       <div class="tl" id="tl" aria-label="타임라인"></div>
       <div class="transport">
         <button class="btn mark" id="markbtn" type="button">컷 (M)</button>
-        <span class="qm" id="tlq" data-tip="">?</span> <span class="qm" data-tip="[단축키]&#10;M 컷&#10;Space 재생/정지&#10;← → 1초 이동&#10;↑ ↓ 10초 이동&#10;Ctrl+Z 실행취소&#10;Ctrl+Y 다시실행&#10;Delete 선택한 선/구간 지우기">?</span>
+        <span class="qm" id="tlq" data-tip="">?</span> <span class="qm" data-tip="[단축키]&#10;M 컷&#10;Space 재생/정지&#10;← → 1초 이동&#10;↑ 10초 뒤로 / ↓ 10초 앞으로&#10;Ctrl+Z 실행취소&#10;Ctrl+Y 다시실행&#10;Delete 선택한 선/구간 지우기">?</span>
       </div>
       <div class="cutbox">
         <div class="row2">
@@ -1933,8 +1933,8 @@ document.addEventListener('keydown',function(e){
   else if(e.key===' '){e.preventDefault();$('#pp').click()}
   else if(e.key==='ArrowLeft'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()-1)}}
   else if(e.key==='ArrowRight'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()+1)}}
-  else if(e.key==='ArrowUp'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()+10)}}
-  else if(e.key==='ArrowDown'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()-10)}}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()-10)}}
+  else if(e.key==='ArrowDown'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()+10)}}
   else if(e.key==='Delete'||e.key==='Backspace'){
     if(msel.size){e.preventDefault();deleteSel()}
     else if(selLine!=null){e.preventDefault();deleteLine()}
