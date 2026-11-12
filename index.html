@@ -277,7 +277,7 @@ html:not(.freeon) .ctools .grip{display:none}
       <div class="tl" id="tl" aria-label="타임라인"></div>
       <div class="transport">
         <button class="btn mark" id="markbtn" type="button">컷 (M)</button>
-        <span class="qm" id="tlq" data-tip="">?</span> <span class="qm" data-tip="[단축키]&#10;M 컷&#10;Space 재생/정지&#10;← → 1초 이동&#10;Ctrl+Z 실행취소&#10;Ctrl+Y 다시실행&#10;Delete 선택한 선/구간 지우기">?</span>
+        <span class="qm" id="tlq" data-tip="">?</span> <span class="qm" data-tip="[단축키]&#10;M 컷&#10;Space 재생/정지&#10;← → 1초 이동&#10;↑ ↓ 10초 이동&#10;Ctrl+Z 실행취소&#10;Ctrl+Y 다시실행&#10;Delete 선택한 선/구간 지우기">?</span>
       </div>
       <div class="cutbox">
         <div class="row2">
@@ -746,7 +746,7 @@ function makePlayer(){
     events:{
       onReady:function(){
         ytReady=true;
-        if(src==='yt'){player=ytp;ready=true;applyRate();dur=player.getDuration()||0;render()}
+        if(src==='yt'){player=ytp;ready=true;applyRate();dur=readDur();render()}
       },
       onStateChange:function(e){if(src==='yt'){onState(e);setRecentTitle()}},
       onError:function(e){
@@ -761,10 +761,15 @@ function makePlayer(){
 window.onYouTubeIframeAPIReady=function(){apiReady=true;if(videoId&&src==='yt'&&!ytp)makePlayer()};
 (function(){var s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';document.head.appendChild(s)})();
 
+/* 새 영상으로 바꾼 직후엔 플레이어가 이전 영상의 길이를 돌려주므로, 영상 id가 맞을 때만 길이를 받는다 */
+function readDur(){
+  try{var vd=player.getVideoData&&player.getVideoData();if(src==='yt'&&vd&&vd.video_id&&videoId&&vd.video_id!==videoId)return 0}catch(e){}
+  return player.getDuration()||0;
+}
 function applyRate(){if(ready&&player&&player.setPlaybackRate)try{player.setPlaybackRate(S.rate)}catch(e){}}
 function onState(e){
   $('#pp').textContent=(e.data===1)?'정지':'재생';
-  if(e.data===1){applyRate();if(!dur){dur=player.getDuration()||0;if(dur)render()}}
+  if(e.data===1){applyRate();if(!dur){dur=readDur();if(dur)render()}}
   if(e.data===0&&(mode==='range'||mode==='single')&&cur!=null)advance();
 }
 
@@ -847,7 +852,7 @@ function skipHid(t){
 setInterval(function(){
   if(!ready||!player)return;
   var t=0;try{t=player.getCurrentTime()||0}catch(e){return}
-  if(!dur){dur=player.getDuration()||0;if(dur)render()}
+  if(!dur){dur=readDur();if(dur)render()}
   updateClock(t);
   if(performance.now()<guardUntil){skipPrev=null;return}
   if(mode==='idle')skipHid(t);else skipPrev=null;
@@ -1928,6 +1933,8 @@ document.addEventListener('keydown',function(e){
   else if(e.key===' '){e.preventDefault();$('#pp').click()}
   else if(e.key==='ArrowLeft'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()-1)}}
   else if(e.key==='ArrowRight'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()+1)}}
+  else if(e.key==='ArrowUp'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()+10)}}
+  else if(e.key==='ArrowDown'){e.preventDefault();if(ready){if(mode!=='idle')stopMode(true);seek(player.getCurrentTime()-10)}}
   else if(e.key==='Delete'||e.key==='Backspace'){
     if(msel.size){e.preventDefault();deleteSel()}
     else if(selLine!=null){e.preventDefault();deleteLine()}
