@@ -53,6 +53,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+input.numin{width:64px;text-align:center;font-weight:700;padding:5px 4px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font-size:inherit}
+.card.kbact{outline:3px solid var(--accent);outline-offset:-2px}
 .urlbar{gap:8px;flex-wrap:wrap}
 .urlbar input[type=text]{flex:1 1 260px;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
 .btn{border:1px solid var(--line);background:var(--surface);padding:8px 12px;border-radius:var(--rb,6px);min-height:var(--btnh,38px);line-height:1.2}
@@ -311,7 +313,7 @@ html:not(.freeon) .ctools .grip{display:none}
         <div class="row2">
           <div class="field"><span id="nlab">앞에서</span>
             <button class="btn sm" id="nminus" type="button">-</button>
-            <b class="mono" id="nval">전체</b>
+            <input type="text" inputmode="numeric" class="mono numin" id="nval" value="전체" aria-label="앞에서 개수">
             <button class="btn sm" id="nplus" type="button">+</button>
             개
           </div>
@@ -323,7 +325,7 @@ html:not(.freeon) .ctools .grip{display:none}
         <div class="row2" style="margin-top:8px">
           <div class="field">소거
             <button class="btn sm" id="sminus" type="button">-</button>
-            <b class="mono" id="sval">-</b>
+            <input type="text" inputmode="numeric" class="mono numin" id="sval" value="-" aria-label="소거 개수">
             <button class="btn sm" id="splus" type="button">+</button>
             개
           </div>
@@ -1189,10 +1191,10 @@ function zoomUi(){
   $('#zm').textContent=prefs.zmult||6;
 }
 function renderStatusBits(){
-  $('#sval').textContent=smVal();
+  if(document.activeElement!==$('#sval'))$('#sval').value=smVal();
   $('#smode').textContent=S.sm>0?'소거 중 (끄기)':'소거 시작';
   $('#smode').classList.toggle('on',S.sm>0);
-  $('#nval').textContent=prefs.rev?(S.nx?S.nx:('전체 '+(S.order.length-rEnd()))):(S.n===0?('전체 '+S.order.length):S.n);
+  if(document.activeElement!==$('#nval'))$('#nval').value=prefs.rev?(S.nx?S.nx:('전체 '+(S.order.length-rEnd()))):(S.n===0?('전체 '+S.order.length):S.n);
   $('#nlab').textContent=prefs.rev?'제외 앞에서':'앞에서';
   $('#revbtn').classList.toggle('on',prefs.rev);
   $('#lrows').value=String(prefs.lrows);
@@ -1289,7 +1291,8 @@ function itemAct(id,act){
     if(prefs.rev){
       if(p0<r0){toast('반전 중에는 제외 구간에서만 쓸 수 있어요');return}
       S.nx=p0-r0+1;commit();toast('제외 1번부터 '+S.nx+'번까지 반복해요');
-    }else{S.n=p0+1;commit();toast('커스텀 1번부터 '+(p0+1)+'번까지 반복해요')}
+    }else if(S.sm>0){S.sm=S.sc=p0+1;commit();toast('소거 '+(p0+1)+'개로 맞췄어요')}
+    else{S.n=p0+1;commit();toast('커스텀 1번부터 '+(p0+1)+'번까지 반복해요')}
   }
 }
 function applyEditFold(){
@@ -1678,6 +1681,28 @@ function smCtl(d){
   var n=S.order.length,v=smVal()+d;if(v<1||v>n)return;
   if(S.sm>0)S.sm=v;S.sc=v;commit();
 }
+function numIn(el){var m=String(el.value).match(/\d+/);return m?parseInt(m[0],10):NaN}
+$('#nval').addEventListener('focus',function(){var e=this;setTimeout(function(){e.select()},0)});
+$('#sval').addEventListener('focus',function(){var e=this;setTimeout(function(){e.select()},0)});
+function nSet(){
+  var v=numIn($('#nval')),n=S.order.length;
+  if(isNaN(v)){renderStatusBits();return}
+  if(prefs.rev){var ex=n-rEnd();S.nx=(v>=ex||v<1)?0:v}
+  else S.n=(v>=n||v<1)?0:v;
+  commit();renderStatusBits();
+}
+function sSet(){
+  var v=numIn($('#sval')),n=S.order.length;
+  if(isNaN(v)){renderStatusBits();return}
+  v=Math.max(1,Math.min(n,v));
+  if(S.sm>0)S.sm=v;S.sc=v;commit();renderStatusBits();
+}
+['nval','sval'].forEach(function(id){
+  var el=$('#'+id);
+  el.addEventListener('keydown',function(e){e.stopPropagation();if(e.key==='Enter'){e.preventDefault();this.blur()}});
+  el.addEventListener('change',function(){id==='nval'?nSet():sSet()});
+  el.addEventListener('blur',function(){renderStatusBits()});
+});
 $('#sminus').addEventListener('click',function(){smCtl(-1)});
 $('#splus').addEventListener('click',function(){smCtl(1)});
 $('#smode').addEventListener('click',function(){
@@ -1813,7 +1838,7 @@ $('#editor').addEventListener('click',function(e){
     if(mode==='single'&&cur===selId){stopMode();render()}else startSingle(selId);
   }
   else if(act==='up'||act==='down'){move(selId,act)}
-  else if(act==='upto'){var p=S.order.indexOf(selId)+1;S.n=p;commit();toast('커스텀 1번부터 '+p+'번까지 반복해요')}
+  else if(act==='upto'){var p=S.order.indexOf(selId)+1;if(S.sm>0){S.sm=S.sc=p;commit();toast('소거 '+p+'개로 맞췄어요')}else{S.n=p;commit();toast('커스텀 1번부터 '+p+'번까지 반복해요')}}
   else if(act==='merge'){mergeAt(ix(selId))}
   else if(act==='hide'){setHidden([selId],true)}
   else if(act==='unhide'){setHidden([selId],false)}
@@ -1882,7 +1907,14 @@ var listActive=false,lastArrow={k:'',t:0};
 document.addEventListener('pointerdown',function(e){
   var card=listEl.closest('section');
   listActive=!!(card&&card.contains(e.target));
+  markActive();
 },true);
+function markActive(){
+  var l=listEl.closest('section'),st=document.querySelector('.stage.card');
+  if(l)l.classList.toggle('kbact',listActive);
+  if(st)st.classList.toggle('kbact',!listActive);
+}
+markActive();
 function listNav(d){
   var ids=Array.prototype.map.call(listEl.querySelectorAll('.item'),function(el){return Number(el.dataset.id)});
   if(!ids.length)return;
