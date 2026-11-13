@@ -516,7 +516,25 @@ function buildMap(){
   if(customView()){
     var cx=0;
     S.order.forEach(function(id){var a=st(id),b=en(id);spans.push({a:a,b:b,x:cx,id:id});cx+=(b-a)});
-    V=cx||dur;return;
+    V=cx||dur;zInfo=null;
+    /* 확대: 지금 위치를 가운데로 해서 재생 순서 막대의 일부만 크게 보여준다 */
+    if(prefs.zoom==='auto'&&spans.length>=3){
+      var lens2=spans.map(function(q){return q.b-q.a}).sort(function(a,b){return a-b});
+      var m2=lens2.length%2?lens2[(lens2.length-1)/2]:(lens2[lens2.length/2-1]+lens2[lens2.length/2])/2;
+      var L2=Math.max(2,m2*(prefs.zmult||6));
+      if(L2<V){
+        var tc=curTime(),cid2=(typeof cur!=='undefined'&&cur!=null&&ix(cur)>=0&&tc>=st(cur)-1e-6&&tc<=en(cur)+1e-6)?cur:segAt(tc),xc=0;
+        for(var qi=0;qi<spans.length;qi++)if(spans[qi].id===cid2){xc=spans[qi].x+Math.max(0,Math.min(spans[qi].b-spans[qi].a,tc-spans[qi].a));break}
+        var w0=xc-L2/2;if(w0<0)w0=0;if(w0>V-L2)w0=V-L2;
+        var w1=w0+L2,ns2=[];
+        spans.forEach(function(q){
+          var ln=q.b-q.a,a4=Math.max(q.x,w0),b4=Math.min(q.x+ln,w1);
+          if(b4>a4)ns2.push({a:q.a+(a4-q.x),b:q.a+(b4-q.x),x:a4-w0,id:q.id});
+        });
+        spans=ns2;V=L2;zLastT=tc;zInfo={ws:0,we:dur,L:L2};
+      }
+    }
+    return;
   }
   zInfo=null;
   if(!prefs.fold&&prefs.zoom==='auto'){
@@ -1149,14 +1167,14 @@ function renderTimeline(){
   if(customView()){
     var hc='';
     spans.forEach(function(sp,i){
-      var id=sp.id,x=S.secs[ix(id)],fw=(sp.b-sp.a)/V,lab='';
+      var id=sp.id,x=S.secs[ix(id)],fw=(sp.b-sp.a)/V,lab='',ci=S.order.indexOf(id)+1;
       if(fw*w>=18){
         var o=onum(id);
         if(prefs.barNum==='orig')lab='<b>'+o+'</b>';
-        else if(prefs.barNum==='custom')lab='<b>'+(i+1)+'</b>';
-        else lab='<b>'+o+'</b><em>'+(i+1)+'</em>';
+        else if(prefs.barNum==='custom')lab='<b>'+ci+'</b>';
+        else lab='<b>'+o+'</b><em>'+ci+'</em>';
       }
-      var cl='seg '+(inR[id]?'in':'out')+(i%2?' alt':'')+(id===selId?' sel':'')+(msel.has(id)?' ms':'')+((cfActive()&&prefs.cfs.indexOf(x.c||0)<0)?' dim':'');
+      var cl='seg '+(inR[id]?'in':'out')+(ci%2===0?' alt':'')+(id===selId?' sel':'')+(msel.has(id)?' ms':'')+((cfActive()&&prefs.cfs.indexOf(x.c||0)<0)?' dim':'');
       hc+='<div class="'+cl+'" style="left:'+(sp.x/V*100)+'%;width:'+(fw*100)+'%">'+(x.c?'<i class="cs c'+x.c+'"></i>':'')+(lab?'<span class="lab">'+lab+'</span>':'')+'</div>';
     });
     hc+='<b class="head" id="head"></b>';
@@ -1550,7 +1568,7 @@ tlEl.addEventListener('pointerdown',function(e){
       selLine=S.secs[k].id;
     }
   }
-  if(tdrag.kind==='click'&&prefs.zoom==='auto'&&zInfo){
+  if(tdrag.kind==='click'&&prefs.zoom==='auto'&&zInfo&&!customView()){
     var td=tdrag;
     td.timer=setTimeout(function(){
       if(tdrag!==td||td.moved)return;
@@ -1651,7 +1669,7 @@ function endTl(e,cancel){
   render();
 }
 tlEl.addEventListener('wheel',function(e){
-  if(prefs.zoom!=='auto'||!zInfo)return;
+  if(prefs.zoom!=='auto'||!zInfo||customView())return;
   if(!(e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)))return;
   e.preventDefault();
   var dx=Math.abs(e.deltaX)>0?e.deltaX:e.deltaY;
