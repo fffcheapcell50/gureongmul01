@@ -177,7 +177,7 @@ input.numin{width:64px;text-align:center;font-weight:700;padding:5px 4px;border:
 .bm .name small{display:block;color:var(--muted);font-size:12px}
 textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:6px;background:var(--bg);padding:8px;font-family:var(--font-mono);font-size:12px}
 input[type=text],input[type=number]{border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:6px 8px;min-width:0}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-size:14px;max-width:calc(100% - 32px);z-index:20}
+.toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-size:14px;max-width:calc(100% - 32px);z-index:20}
 .keys{font-size:12px;color:var(--muted);line-height:1.7}
 kbd{font-family:var(--font-mono);border:1px solid var(--line);border-radius:4px;padding:0 5px;background:var(--bg)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -230,6 +230,11 @@ html:not(.freeon) .ctools .grip{display:none}
 .undofix{position:fixed;top:max(12px,env(safe-area-inset-top,0px));right:12px;z-index:30;display:flex;gap:8px}
 .undofix .round{width:60px;height:40px;min-height:40px;padding:0;border-radius:20px;font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .undofix .round:disabled{opacity:.35;box-shadow:none}
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;gap:8px}
+.dock .round{width:54px;height:42px;min-height:42px;padding:0;border-radius:21px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.dock .round:disabled{opacity:.35}
+.dock .round.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 .tunebtn{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:30;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .tune{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(60px + env(safe-area-inset-bottom,0px));z-index:30;width:min(340px,calc(100% - 24px));max-height:70vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.3)}
 .tune.min{width:auto;padding:8px 10px;overflow:visible}
@@ -415,6 +420,12 @@ html:not(.freeon) .ctools .grip{display:none}
       </section>
     </div>
   </div>
+</div>
+<div class="dock" id="dock">
+  <button class="btn round" id="dkfirst" type="button" data-tip="커스텀 1번 구간으로 (선택하고 재생)" aria-label="맨앞 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v14"/><path d="M19 5l-9 7 9 7z" fill="currentColor"/></svg></button>
+  <button class="btn round" id="dkplay" type="button" data-tip="재생 / 멈춤. 선택한 구간을 한 번 듣습니다." aria-label="재생"></button>
+  <button class="btn round" id="dkloop" type="button" data-tip="범위 반복 시작. 반복 중에 한 번 더 누르면 선택한 구간 하나만 반복하고, 또 누르면 다시 범위 반복입니다. 멈추려면 멈춤 버튼을 누르세요." aria-label="반복"></button>
+  <button class="btn round" id="dklast" type="button" data-tip="마지막 구간으로 (선택하고 재생)" aria-label="맨뒤 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 5v14"/><path d="M5 5l9 7-9 7z" fill="currentColor"/></svg></button>
 </div>
 <div class="undofix"><button class="btn round" id="hundo" type="button" data-tip="실행취소 (Ctrl+Z)" aria-label="실행취소">↶</button><button class="btn round" id="hredo" type="button" data-tip="다시실행 (Ctrl+Y)" aria-label="다시실행">↷</button></div>
 <button class="btn sm primary tunebtn" id="tunebtn" type="button">UI 조절</button>
@@ -800,6 +811,7 @@ function readDur(){
 function applyRate(){if(ready&&player&&player.setPlaybackRate)try{player.setPlaybackRate(S.rate)}catch(e){}}
 function onState(e){
   $('#pp').textContent=(e.data===1)?'정지':'재생';
+  if(typeof dockUi==='function')setTimeout(dockUi,0);
   if(e.data===1){applyRate();if(!dur){dur=readDur();if(dur)render()}}
   if(e.data===0&&(mode==='range'||mode==='single')&&cur!=null)advance();
 }
@@ -1247,6 +1259,7 @@ function updateStatus(){
   }else if(mode==='preview'){el.textContent='미리 듣는 중'}
   else{el.textContent='대기 중 · '+(S.sm>0?'소거 범위 ':(prefs.rev?'제외 구간 반복 ':'반복 범위 '))+rangeList().length+'개'}
   $('#startloop').classList.toggle('on',mode==='range');
+  dockUi();
 }
 function adjRow(label,which,disabled,val){
   var ds=[-10,-1,-0.1,0.1,1,10];
@@ -1286,7 +1299,7 @@ function itemHtml(id,p,r){
     '<button type="button" class="pos mono" data-act="select" aria-label="구간 선택">'+(orig?o:(p+1))+'</button>'+
     '<div class="meta"><b>'+(orig?('커스텀 '+(p+1)+'번'):('원래 '+o+'번'))+'</b><span class="mono">'+fmt(a)+' - '+fmt(b)+'</span>'+(isEx?'<span class="tag">제외</span>':'')+no+nm+memo+'</div></li>';
 }
-var LT=[['play','▶'],['single','⟳'],['color',''],['front','맨앞'],['mid','가운데'],['back','맨뒤'],['up','↑'],['down','↓'],['upto','여기까지'],['hide','숨김']];
+var LT=[['color',''],['front','맨앞'],['mid','가운데'],['back','맨뒤'],['up','↑'],['down','↓'],['upto','여기까지'],['hide','숨김']];
 function renderLtools(){
   var el=$('#ltools');if(!el)return;
   var ok=S.order.indexOf(selId)>=0,c=ok?(S.secs[ix(selId)].c||0):0;
@@ -1411,6 +1424,48 @@ $('#file').addEventListener('change',function(){
 $('#markbtn').addEventListener('click',mark);
 $('#hundo').addEventListener('click',undo);
 $('#hredo').addEventListener('click',redo);
+/* 하단 중앙 조작 막대 */
+var DK={
+  play:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4.5" height="14" rx="1"/><rect x="13.5" y="5" width="4.5" height="14" rx="1"/></svg>',
+  rep:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>',
+  rep1:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/><path d="M11 10h1.2v4.5"/></svg>'
+};
+function isPlayingNow(){
+  if(mode!=='idle')return true;
+  try{return !!ready&&player&&player.getPlayerState&&player.getPlayerState()===1}catch(e){return false}
+}
+function dockUi(){
+  var pl=$('#dkplay');if(!pl)return;
+  var playing=isPlayingNow(),ok=!!(ready&&dur&&S&&S.order.length);
+  var a=playing?DK.pause:DK.play;if(pl.dataset.in!==(playing?'p':'s')){pl.innerHTML=a;pl.dataset.in=playing?'p':'s';pl.setAttribute('aria-label',playing?'멈춤':'재생')}
+  var lp=$('#dkloop'),one=mode==='single',k=one?'1':'r';
+  if(lp.dataset.in!==k){lp.innerHTML=one?DK.rep1:DK.rep;lp.dataset.in=k;lp.setAttribute('aria-label',one?'한 구간 반복 중':'범위 반복')}
+  lp.classList.toggle('on',mode==='range'||mode==='single');
+  ['#dkfirst','#dkplay','#dkloop','#dklast'].forEach(function(q){$(q).disabled=!ok});
+}
+function dockGo(id){
+  if(id==null||ix(id)<0)return;
+  selId=id;selLine=null;
+  if(mode==='single')startSingle(id);else itemAct(id,'play');
+  render();
+  var li=listEl.querySelector('.item[data-id="'+id+'"]');if(li&&li.scrollIntoView)li.scrollIntoView({block:'nearest'});
+}
+$('#dkfirst').addEventListener('click',function(){if(S&&S.order.length)dockGo(S.order[0])});
+$('#dklast').addEventListener('click',function(){if(S&&S.order.length)dockGo(S.order[S.order.length-1])});
+$('#dkplay').addEventListener('click',function(){
+  if(!ready)return;
+  if(isPlayingNow()){mode==='idle'||stopMode();player.pauseVideo();setTimeout(dockUi,150);return}
+  if(selId!=null&&S.order.indexOf(selId)>=0)itemAct(selId,'play');else player.playVideo();
+  setTimeout(dockUi,150);
+});
+$('#dkloop').addEventListener('click',function(){
+  if(!ready||!dur)return;
+  if(mode==='range'&&cur!=null)startSingle(cur);
+  else if(mode==='single')startRange(false);
+  else startRange(false);
+  dockUi();
+});
 $('#pp').addEventListener('click',function(){
   if(!ready)return;
   if(player.getPlayerState()===1){mode==='idle'||stopMode();player.pauseVideo()}else player.playVideo();
