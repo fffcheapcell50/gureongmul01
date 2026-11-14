@@ -151,6 +151,17 @@ input.numin{width:64px;text-align:center;font-weight:700;padding:5px 4px;border:
 .item .memoin{flex:1;min-width:70px;padding:2px 6px;font-size:12px;height:24px}
 .ltools{display:flex;flex-wrap:wrap;gap:3px;margin:0 0 8px}
 .ltools .btn{min-height:30px;height:30px;padding:0 7px;font-size:12.5px}
+@media (max-width:520px){
+#lfilt{flex-wrap:nowrap;gap:2px!important}
+#lfilt .btn.sm{padding:0 4px;font-size:10.5px;min-width:0;flex:0 0 auto;white-space:nowrap;height:30px;min-height:30px}
+#lfilt .sl{display:none}
+#lfilt .cfb{padding:0 1px;min-width:0;width:20px}
+#lfilt select.btn.sm{width:38px;padding:0 0 0 6px;-webkit-appearance:none;appearance:none;text-align:center;text-align-last:center}
+#lfilt #cfbar{flex-wrap:nowrap;gap:1px!important;flex:0 0 auto}
+#lfilt .field{flex-wrap:nowrap;white-space:nowrap;font-size:10px;gap:1px;flex:0 0 auto}
+.ltools{flex-wrap:nowrap;gap:2px}
+.ltools .btn{flex:1 1 auto;min-width:0;padding:0 2px;font-size:11px;white-space:nowrap}
+}
 .item .meta b{color:var(--ink);font-size:13px;font-weight:500}
 .item .memo{color:var(--ink);font-size:12px}
 .item .xtra{grid-column:1 / -1;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:8px;cursor:default;user-select:text;-webkit-user-select:text}
@@ -343,8 +354,8 @@ html:not(.freeon) .ctools .grip{display:none}
       <section class="card" data-fold="list">
         <button class="fold" type="button" aria-expanded="true"><i class="chev"></i><span>구간 목록 <span class="mono" id="count"></span><span class="qm" data-tip="항목을 눌러 선택하고, 원래순에서는 번호가 원래 번호, 커스텀순에서는 재생 순서입니다. 커스텀순에서 항목을 꾹 눌러 끌면 순서가 바뀝니다. 색 동그라미로 색 필터를 여러 개 켤 수 있고, 아무것도 켜지 않으면 전체가 나옵니다.">?</span><span class="qm" data-tip="[키보드] 구간 목록을 누른 상태에서&#10;a 이전 구간 / d 다음 구간&#10;w 재생·정지 / s 지금 구간 처음부터&#10;q 실행취소 / e 다시실행&#10;↑ 소거 켜기·끄기&#10;← 한 칸 앞으로 (두 번 누르면 맨앞)&#10;→ 한 칸 뒤로 (두 번 누르면 맨뒤)&#10;↓ 가운데 (소거가 켜져 있으면 소거)">?</span></span></button>
         <div class="fbody">
-        <div class="row2" style="margin-bottom:6px;gap:6px">
-          <button class="btn sm" id="sortbtn" type="button">정렬: 원래순</button>
+        <div class="row2" id="lfilt" style="margin-bottom:6px;gap:6px">
+          <button class="btn sm" id="sortbtn" type="button"><span class="sl">정렬: </span>원래순</button>
           <button class="btn sm" id="revbtn" type="button" data-tip="반전: 제외한(외운) 구간을 목록 위로 올리고, 범위 반복도 제외한 구간만 다시 돌립니다. 헷갈리는 외운 구간을 복습할 때 씁니다. 다시 누르면 원래대로 돌아갑니다.">반전</button>
           <span id="cfbar" class="row2" style="gap:4px"></span>
           <select id="lrows" class="btn sm" data-tip="목록에 한 번에 보이는 줄 수. 나머지는 스크롤합니다."><option value="5">5줄</option><option value="10">10줄</option><option value="15">15줄</option><option value="20">20줄</option><option value="0">전체</option></select>
@@ -357,7 +368,7 @@ html:not(.freeon) .ctools .grip{display:none}
           <button class="btn sm" id="csvexp" type="button" data-tip="이 영상의 구간 목록을 CSV 파일로 내려받습니다. 엑셀에서 바로 열립니다. 지금 보는 순서(원래순/커스텀순)대로 저장됩니다.">CSV 내보내기</button>
           <button class="btn sm primary" id="xlpaste" type="button" data-tip="엑셀용 복사와 같은 모양(원래순번, 커스텀순번, 이름, 메모, 색)으로 붙여넣으면 원래순번으로 구간을 찾아 이름·순서·메모·색을 넣습니다. 붙여넣은 칸만 적용돼요. 한 열이면 지금 목록 순서대로 이름만 들어갑니다.">엑셀용 붙여넣기</button>
           <button class="btn sm" id="fillbtn" type="button" data-tip="이름을 번호로 한꺼번에 채웁니다. 시작 번호를 넣으면 보이는 구간(숨김 제외)에 지금 목록 순서대로 1씩 늘려 채우고, 기존 이름은 덮어씁니다.\n번호가 중간에 빠졌으면 그 구간을 선택하고 '선택부터'를 누르세요.">이름 채움</button>
-          <button class="btn danger sm" id="reset" type="button" data-tip="이 영상의 구간을 모두 지우고 처음부터 다시 시작합니다. 작업은 이 브라우저에 영상별로 자동 저장됩니다.">이 영상 처음부터 다시</button>
+          <button class="btn danger sm" id="reset" type="button" data-tip="이 영상의 구간을 모두 지우고 처음부터 다시 시작합니다. 작업은 이 브라우저에 영상별로 자동 저장됩니다.">리셋</button>
         </div>
         <div class="row2" id="fillbar" hidden style="margin-top:8px"><input type="number" id="fillno" placeholder="시작 번호 (예: 301)" style="width:150px"><button class="btn sm primary" id="fillall" type="button">전체</button><button class="btn sm primary" id="fillsel" type="button">선택한 구간부터</button></div>
         <textarea id="xlout" hidden placeholder="복사가 안 되면 여기서 직접 복사하세요 (Ctrl+A, Ctrl+C)"></textarea>
@@ -1219,7 +1230,7 @@ function renderStatusBits(){
   $('#list').style.maxHeight=prefs.lrows?(prefs.lrows*40-3)+'px':'none';
   $('#reps').value=String(S.reps);
   $('#count').textContent='('+(videoId?S.order.length:0)+'개'+(hiddenCount()?', 숨김 '+hiddenCount()+'개':'')+')';
-  $('#sortbtn').textContent='정렬: '+(prefs.sort==='custom'?'커스텀순':'원래순');
+  $('#sortbtn').innerHTML='<span class="sl">정렬: </span>'+(prefs.sort==='custom'?'커스텀순':'원래순');
   $('#sortbtn').dataset.tip=(prefs.sort==='custom'
     ?'지금은 재생 순서(커스텀순)입니다. 막대도 재생 순서로 늘어서며, 항목을 꾹 눌러 끌면 순서가 바뀝니다. 컷과 선 이동은 원래순에서만 됩니다.'
     :'지금은 영상 시간순(원래순)입니다. 눌러서 커스텀순으로 바꾸면 목록과 막대가 재생 순서로 바뀌고, 항목을 끌어 순서를 바꿀 수 있습니다.')+(cfActive()?'\n색 필터 중에는 끌어서 순서를 바꿀 수 없습니다.':'');
@@ -1869,8 +1880,8 @@ $('#editor').addEventListener('change',function(e){
   commit();
 });
 $('#reset').addEventListener('click',function(){
-  if(!armReset){armReset=true;this.textContent='정말 처음부터 다시? 한 번 더 누르세요';return}
-  armReset=false;this.textContent='이 영상 처음부터 다시';
+  if(!armReset){armReset=true;this.textContent='정말 리셋? 한 번 더 누르세요';return}
+  armReset=false;this.textContent='리셋';
   var keep={rate:S.rate,reps:S.reps,flip:S.flip};
   stopMode(true);S=newState();S.rate=keep.rate;S.reps=keep.reps;S.flip=keep.flip;
   selId=1;lastMark=null;resetView();commit();toast('이 영상의 구간을 모두 지웠어요 (실행취소로 되돌릴 수 있어요)');
@@ -2716,8 +2727,8 @@ function renderRecent(){
   if(!r.length){box.hidden=true;return}
   box.hidden=false;
   box.innerHTML='<div class="rh">최근 본 영상</div>'+r.map(function(x){
-    var st=LS.get('looper:v1:state:'+x.id),cuts=st&&st.secs?st.secs.length-1:0;
-    return '<div class="ri" data-rid="'+esc(x.id)+'"><button type="button" class="rb" data-ract="open"><b>'+esc(x.title||x.id)+'</b><small>youtu.be/'+esc(x.id)+' · 컷 '+cuts+'개</small></button><button type="button" class="rx" data-ract="del" aria-label="기록에서 지우기">✕</button></div>';
+    var st=LS.get('looper:v1:state:'+x.id),cuts=0,hid=0;if(st&&st.secs){hid=st.secs.filter(function(g){return g.h}).length;cuts=st.secs.length-hid}
+    return '<div class="ri" data-rid="'+esc(x.id)+'"><button type="button" class="rb" data-ract="open"><b>'+esc(x.title||x.id)+'</b><small>youtu.be/'+esc(x.id)+' · 구간 '+cuts+'개'+(hid?', 숨김 '+hid+'개':'')+'</small></button><button type="button" class="rx" data-ract="del" aria-label="기록에서 지우기">✕</button></div>';
   }).join('');
 }
 $('#recent').addEventListener('click',function(e){
