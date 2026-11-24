@@ -231,11 +231,29 @@ html:not(.freeon) .ctools .grip{display:none}
 .undofix .round{width:60px;height:40px;min-height:40px;padding:0;border-radius:20px;font-size:20px;line-height:1;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .undofix .round:disabled{opacity:.35;box-shadow:none}
 .ltools [data-lt=sogeo],.ltools [data-lt=upto]{margin-left:8px}
+.tb2{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;align-items:center;gap:6px;width:min(calc(100vw - 16px),520px)}
+.tb2 .tbm,.tb2 .tbb{background:var(--dock);border-color:var(--muted);color:var(--ink);height:38px;min-height:38px;padding:0;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.tb2 .tbm{width:38px;flex:0 0 38px;display:inline-flex;align-items:center;justify-content:center;border-radius:19px}
+.tb2 .tbedit{flex:1 1 auto;display:flex;gap:5px;min-width:0}
+.tb2 .tbb{flex:1 1 0;min-width:0;padding:0 2px;font-size:13px;border-radius:19px;white-space:nowrap}
+.tb2 .tbb:disabled{opacity:.5}
+.tb2.fold .tbedit{display:none}
+.tb2.fold{justify-content:flex-start}
+.tb2.fold #tbscroll{margin-left:auto}
+.tb2 .tbm.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tb2 #tblock{position:relative;overflow:hidden}
+.tb2 #tblock::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--accent)}
+.tb2 #tblock.hold::after{width:100%;transition:width 1s linear}
+.sepdv{list-style:none;flex:0 0 6px;height:6px;min-height:6px;margin:2px 0;border-radius:3px;background:var(--pull);opacity:.75;cursor:pointer;position:relative}
+.sepdv::before{content:"";position:absolute;left:0;right:0;top:-8px;bottom:-8px}
+.sepdv.sel{opacity:1;outline:2px solid var(--accent);outline-offset:1px}
+html.plock,html.plock body{overflow:hidden;overscroll-behavior:none}
+#list{overscroll-behavior:contain}
 .dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:30;display:flex;gap:6px}
 .dock .round{background:var(--dock);border-color:var(--muted);color:var(--ink);width:54px;height:42px;min-height:42px;padding:0;border-radius:21px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.3)}
 .dock .round:disabled{opacity:.5}
 .dock .round.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 .tunebtn{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(66px + env(safe-area-inset-bottom,0px));z-index:30;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .tune{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:30;width:min(340px,calc(100% - 24px));max-height:calc(100vh - 140px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.3)}
 .tune.min{width:auto;padding:8px 10px;overflow:visible}
@@ -395,6 +413,7 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
           <button class="btn sm primary" id="bkexp" type="button" data-tip="모든 영상의 편집, 북마크, 최근 영상 기록을 파일 하나로 내려받습니다. 폰과 컴퓨터 사이에 옮길 때 쓰세요.">전체 백업 내려받기</button>
           <button class="btn sm" id="bkimp" type="button" data-tip="백업 파일을 불러옵니다. 같은 영상에 양쪽 편집이 있으면 마지막 수정이 더 최근인 쪽이 남고, 다른 쪽은 북마크로 저장됩니다.">백업 불러오기</button>
           <input type="file" id="bkfile" accept=".json,application/json" hidden>
+          <button class="btn sm primary" id="tunebtn" type="button" style="margin-left:auto">UI 조절</button>
         </div>
         <div class="syncbox">
           <div class="hint"><b>다른 기기와 동기화 (GitHub Gist)</b></div>
@@ -422,6 +441,12 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
     </div>
   </div>
 </div>
+<div class="tb2" id="tb2">
+  <button class="btn tbm" id="tbfold" type="button" data-tip="이 줄을 접거나 펼칩니다" aria-label="접기"></button>
+  <div class="tbedit" id="tbedit"></div>
+  <button class="btn tbm" id="tbscroll" type="button" data-tip="구간 목록을 맨위로 / 맨밑으로. 맨위에 있을 때는 맨밑으로, 그 밖에는 맨위로 갑니다." aria-label="목록 맨위/맨밑"></button>
+  <button class="btn tbm" id="tblock" type="button" data-tip="화면 고정. 1초 꾹 눌러 켜고 끕니다. 켜면 화면 전체 스크롤이 막히고 구간 목록 안의 스크롤만 됩니다." aria-label="화면 고정"><span class="lk"></span></button>
+</div>
 <div class="dock" id="dock">
   <button class="btn round" id="dkfirst" type="button" data-tip="커스텀 1번 구간으로 (재생 중이면 바로 재생)" aria-label="맨앞 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v14"/><path d="M19 5l-9 7 9 7z" fill="currentColor"/></svg></button>
   <button class="btn round" id="dkprev" type="button" data-tip="이전 구간 (키보드 a)" aria-label="이전 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
@@ -431,7 +456,6 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
   <button class="btn round" id="dklast" type="button" data-tip="마지막 구간으로 (재생 중이면 바로 재생)" aria-label="맨뒤 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 5v14"/><path d="M5 5l9 7-9 7z" fill="currentColor"/></svg></button>
 </div>
 <div class="undofix"><button class="btn round" id="hundo" type="button" data-tip="실행취소 (Ctrl+Z)" aria-label="실행취소">↶</button><button class="btn round" id="hredo" type="button" data-tip="다시실행 (Ctrl+Y)" aria-label="다시실행">↷</button></div>
-<button class="btn sm primary tunebtn" id="tunebtn" type="button">UI 조절</button>
 <div class="tune" id="tune" hidden>
   <div class="row2 thead" style="justify-content:space-between;margin-bottom:8px"><b>UI 조절 (임시)</b><span class="row2"><button class="btn sm" id="tunemin" type="button">접기</button><button class="btn sm" id="tuneclose" type="button">닫기</button></span></div>
   <div id="tunerows"></div>
@@ -440,6 +464,8 @@ body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
   <div class="tr"><span>테마</span><select id="tc-theme" class="btn sm" style="grid-column:2 / 4"><option value="auto">자동</option><option value="light">밝게</option><option value="dark">어둡게</option></select></div>
   <div class="row2" style="margin-top:10px"><label class="field" style="cursor:pointer" data-tip="켜면 카드 제목 막대를 끌어서 옮길 수 있고, 다른 카드 옆으로 가면 찰싹 붙습니다. 카드의 연결을 체크하면 붙어 있는 연결 카드끼리 같이 접히고 같이 움직입니다."><input type="checkbox" id="free-on"> 카드 자유 배치</label><button class="btn sm" id="free-reset" type="button">배치 처음으로</button></div>
   <div class="row2" style="margin-top:10px"><button class="btn sm" id="fold-all" type="button">카드 전부 접기</button><button class="btn sm" id="unfold-all" type="button">카드 전부 펼치기</button></div>
+  <div class="row2" style="margin-top:10px"><label class="field" style="cursor:pointer" data-tip="켜면 PC와 폰이 같은 모양을 씁니다. 어느 쪽에서 바꾸든 최근에 바꾼 것으로 맞춰져요. 끄면 각자 따로입니다."><input type="checkbox" id="ui-link"> PC·폰 둘 다 연동</label></div>
+  <div class="row2" style="margin-top:8px"><button class="btn sm" id="ui-send" type="button" data-tip="이 기기의 모양을 다른 기기(PC↔폰) 칸으로 보냅니다">다른 기기로 복사</button><button class="btn sm" id="ui-get" type="button" data-tip="다른 기기에서 보낸 모양을 이 기기에 적용합니다">다른 기기 것 가져오기</button></div>
   <div class="row2" style="margin-top:8px"><button class="btn sm" id="tune-reset" type="button">전부 초기화</button><button class="btn sm primary" id="tune-copy" type="button" data-tip="원하는 모양이 되면 눌러서 값을 복사해 저에게 알려 주세요. 그 값으로 고정해 드립니다.">값 복사</button></div>
   <textarea id="tune-out" hidden style="margin-top:8px;min-height:60px" placeholder="값을 여기에 표시합니다"></textarea>
 </div>
@@ -512,9 +538,11 @@ function onum(id){
 }
 function visCount(){return S.order.length}
 function rEnd(){return S.n||S.order.length}
+function dvList(){var n=S.order.length;return (S.dv||[]).filter(function(k){return k>=1&&k<n}).sort(function(a,b){return a-b})}
+var selDv=null;
 function rangeList(){
   var l;
-  if(S.sm>0)l=S.order.slice(0,S.sm);
+  if(S.sm>0){var cnt=S.sm,dv0=dvList();if(dv0.length)cnt=Math.max(1,Math.min(cnt,dv0[0]));l=S.order.slice(0,cnt)}
   else if(prefs.rev){var ex=S.order.slice(rEnd());l=ex.slice(0,S.nx||ex.length)}
   else l=S.order.slice(0,rEnd());
   if(cfActive()&&prefs.cfLoop)l=l.filter(cfOk);
@@ -673,7 +701,7 @@ function f2t(f){
 }
 
 /* 실행취소 / 다시실행: 구간(숨김·색·메모 포함), 순서, 반복 범위만 기록 */
-function snap(){return JSON.stringify({secs:S.secs,nid:S.nid,order:S.order,n:S.n,nx:S.nx||0,sm:S.sm||0,sc:S.sc||0})}
+function snap(){return JSON.stringify({secs:S.secs,nid:S.nid,order:S.order,n:S.n,nx:S.nx||0,sm:S.sm||0,sc:S.sc||0,dv:S.dv||[]})}
 function resetHistory(){lastSnap=snap();undoSt=[];redoSt=[]}
 function fixSel(){
   if(ix(selId)<0)selId=S.order[0];
@@ -691,7 +719,7 @@ function commit(){
 }
 function applySnap(str){
   var o=JSON.parse(str);
-  S.secs=o.secs;S.nid=o.nid;S.order=o.order;S.n=o.n;S.nx=o.nx||0;S.sm=o.sm||0;S.sc=o.sc||0;S.mt=Date.now();
+  S.secs=o.secs;S.nid=o.nid;S.order=o.order;S.n=o.n;S.nx=o.nx||0;S.sm=o.sm||0;S.sc=o.sc||0;S.dv=o.dv||[];S.mt=Date.now();
   stopMode(true);lastMark=null;fixSel();save();render();
 }
 function undo(){
@@ -873,7 +901,9 @@ function advance(){
   if(rep<S.reps){playAt(st(cur));return}
   rep=0;
   var list=rangeList();if(!list.length){stopMode();return}
-  var prev=cur,p=list.indexOf(cur);p=(p+1)%list.length;cur=list[p];
+  var prev=cur,p=list.indexOf(cur);p=(p+1)%list.length;
+  if(navAnchor&&navAnchor.id===cur){var an=list.indexOf(navAnchor.next);navAnchor=null;if(an>=0)p=an}
+  cur=list[p];
   if(cur!==prev&&Math.abs(st(cur)-en(prev))<1e-6){updateStatus();return}
   playAt(st(cur));updateStatus();
 }
@@ -1057,47 +1087,81 @@ function adjust(which,d){
 }
 
 /* 순서 */
-function move(id,how){
+var lastPickAt=0;
+var navAnchor=null; /* 편집으로 옮긴 구간의 이전 자리: 다음/이전 이동은 이 자리를 기준으로 한다 */
+function setAnchor(id,o,p){if(navAnchor&&navAnchor.id===id)return;navAnchor={id:id,prev:o[p-1],next:o[p+1]}}
+function move(id,how,full){
   var o=S.order,p=o.indexOf(id);if(p<0)return;
   var b=S.sm>0?Math.min(S.sm,o.length):rEnd(),inR=p<b,lo=inR?0:b,hi=inR?b-1:o.length-1;
   var front=(how==='front'||how==='up'),edge=front?p===lo:p===hi;
   function setB(v){if(S.sm>0)S.sm=v;else S.n=v}
   if(!edge){
-    o.splice(p,1);
-    if(how==='front')o.splice(lo,0,id);
-    else if(how==='back')o.splice(hi,0,id);
-    else if(how==='up')o.splice(p-1,0,id);
-    else o.splice(p+1,0,id);
+    var t;
+    if(how==='front'){
+      t=lo;
+      if(!full)dvList().forEach(function(k){if(k<p&&k>t)t=k});   /* 구분선 바로 아래에서 먼저 멈춘다 */
+    }else if(how==='back'){
+      t=hi;
+      if(!full)dvList().forEach(function(k){if(k-1>p&&k-1<t)t=k-1}); /* 구분선 바로 위에서 먼저 멈춘다 */
+    }else t=how==='up'?p-1:p+1;
+    setAnchor(id,o,p);
+    o.splice(p,1);o.splice(t,0,id);
     commit();return;
   }
   if(how==='up'||how==='down'){toast('이미 '+(inR?'범위 안':'범위 밖')+'의 맨 '+(front?'앞':'뒤')+'이에요');return}
   /* 이미 자기 범위의 끝이면 반대 범위의 같은 쪽 끝으로 넘긴다 (범위 개수도 같이 바뀜) */
   if(inR){
-    if(b<=1){toast('반복 범위에는 최소 1개가 있어야 해요');return}
+    if(b<=1){
+      if(S.sm>0){ /* 소거 중 마지막 1개: 맨 끝으로 보내며 소거를 끝낸다 */
+        setAnchor(id,o,p);o.splice(p,1);o.push(id);
+        S.sm=0;S.sc=0;stopMode(true);commit();toast('소거를 마쳤어요. 소거 모드를 껐어요');return;
+      }
+      toast('반복 범위에는 최소 1개가 있어야 해요');return;
+    }
+    setAnchor(id,o,p);
     o.splice(p,1);var nb=b-1;
     o.splice(front?nb:o.length,0,id);setB(nb);
     commit();toast('범위 밖의 맨 '+(front?'앞':'뒤')+'으로 보냈어요. 범위 '+nb+'개');
   }else{
+    setAnchor(id,o,p);
     o.splice(p,1);var nb2=b+1;
     o.splice(front?0:b,0,id);setB(nb2);
     commit();toast('범위 안의 맨 '+(front?'앞':'뒤')+'으로 넣었어요. 범위 '+nb2+'개');
   }
+}
+function moveDiv(d){
+  var n=S.order.length,k=selDv;if(k==null)return;
+  var nk=k+d;if(nk<1||nk>=n)return;
+  var dv=S.dv||[];if(dv.indexOf(nk)>=0)return;
+  S.dv=dv.map(function(x){return x===k?nk:x}).sort(function(a,b){return a-b});
+  selDv=nk;commit();
+}
+function toggleDiv(id){
+  var dv=(S.dv||[]).slice();
+  if(selDv!=null){S.dv=dv.filter(function(x){return x!==selDv});selDv=null;commit();toast('구분선을 지웠어요');return}
+  var p=S.order.indexOf(id);if(p<0)return;
+  var k=p+1;if(k>=S.order.length){toast('맨 아래 구간 아래에는 구분선을 만들 수 없어요');return}
+  var i=dv.indexOf(k);
+  if(i>=0){dv.splice(i,1);S.dv=dv;commit();toast('구분선을 지웠어요')}
+  else{dv.push(k);dv.sort(function(a,b){return a-b});S.dv=dv;commit();toast('구분선을 만들었어요')}
 }
 function moveMid(id,kind){
   var o=S.order,p=o.indexOf(id),r=rEnd();
   if(p<0)return;
   if(kind==='sogeo'){
     if(!(S.sm>0)){toast('소거 모드가 꺼져 있어요');return}
-    if(p>=S.sm){o.splice(p,1);o.splice(S.sm,0,id);S.sm++;commit();toast('다시 넣었어요. 소거 범위 '+S.sm+'개');return}
+    if(p>=S.sm){setAnchor(id,o,p);o.splice(p,1);o.splice(S.sm,0,id);S.sm++;commit();toast('다시 넣었어요. 소거 범위 '+S.sm+'개');return}
     if(S.sm<=1){S.sm=0;stopMode(true);commit();toast('소거를 마쳤어요. 소거 모드를 껐어요');return}
-    o.splice(p,1);o.splice(S.sm-1,0,id);S.sm--;
+    setAnchor(id,o,p);o.splice(p,1);o.splice(S.sm-1,0,id);S.sm--;
     commit();toast('소거했어요. 남은 범위 '+S.sm+'개');return;
   }
   if(p<r){
     if(r<=1){toast('반복 범위에는 최소 1개가 있어야 해요');return}
+    setAnchor(id,o,p);
     o.splice(p,1);o.splice(r-1,0,id);S.n=r-1;
     toast('범위에서 빼서 제외 구간의 맨 위에 뒀어요');
   }else{
+    setAnchor(id,o,p);
     o.splice(p,1);o.splice(r,0,id);S.n=r+1;
     toast('반복 범위의 맨 아래로 넣었어요');
   }
@@ -1317,24 +1381,38 @@ function itemHtml(id,p,r){
     '<button type="button" class="pos mono" data-act="select" aria-label="구간 선택">'+(orig?o:(p+1))+'</button>'+
     '<div class="meta"><b>'+(orig?('커스텀 '+(p+1)+'번'):('원래 '+o+'번'))+'</b><span class="mono">'+fmt(a)+' - '+fmt(b)+'</span>'+(isEx?'<span class="tag">제외</span>':'')+no+nm+memo+'</div></li>';
 }
-var LT=[['color',''],['front','맨앞'],['mid','가운데'],['back','맨뒤'],['up','↑'],['down','↓'],['upto','여기까지'],['hide','숨김']];
+var LT=[['color',''],['up','↑'],['down','↓'],['upto','여기까지'],['div','ㅡ'],['hide','숨김']];
+var TB=[['front','맨앞'],['mid','가운데'],['back','맨뒤']];
 function renderLtools(){
   var el=$('#ltools');if(!el)return;
   var ok=S.order.indexOf(selId)>=0,c=ok?(S.secs[ix(selId)].c||0):0;
-  var tips={sogeo:'소거: 선택한 구간을 반복 범위 바로 뒤로 밀어내고 소거 범위를 1개 줄입니다 (범위 밖 구간에서 누르면 다시 넣습니다). 학습/제외 상태는 바뀌지 않습니다.',play:mode==='range'?'여기서부터 이어서 반복 (범위 끝까지 간 뒤 처음으로)':'선택한 구간을 한 번 듣기',single:'선택한 구간만 계속 반복',color:'색 바꾸기 (없음→빨강→노랑→초록)',front:'소속 그룹(학습/제외) 안에서 맨 앞으로',mid:'학습↔제외 그룹 이동 (학습은 제외의 맨 위로, 제외는 학습의 맨 아래로)',back:'소속 그룹(학습/제외) 안에서 맨 뒤로',up:'그룹 안에서 한 칸 앞으로',down:'그룹 안에서 한 칸 뒤로',upto:'커스텀 1번부터 선택한 구간까지 반복',hide:'숨기기(번호에서 제외)'};
-  var lt=LT.slice();if(S.sm>0)lt.splice(3,0,['sogeo','소거']);
-  if(el.children.length!==lt.length||el.dataset.sg!==(S.sm>0?'1':'0')){
-    el.dataset.sg=S.sm>0?'1':'0';
+  var tips={div:'구분선: 선택한 구간 바로 아래에 구분선을 만듭니다. 구분선을 눌러 선택한 뒤 다시 누르면 지우고, ↑ ↓로 한 칸씩 옮깁니다. 소거 중에는 첫 구분선 위까지만 재생합니다.',sogeo:'소거: 선택한 구간을 반복 범위 바로 뒤로 밀어내고 소거 범위를 1개 줄입니다 (범위 밖 구간에서 누르면 다시 넣습니다). 학습/제외 상태는 바뀌지 않습니다.',play:mode==='range'?'여기서부터 이어서 반복 (범위 끝까지 간 뒤 처음으로)':'선택한 구간을 한 번 듣기',single:'선택한 구간만 계속 반복',color:'색 바꾸기 (없음→빨강→노랑→초록)',front:'소속 그룹(학습/제외) 안에서 맨 앞으로',mid:'학습↔제외 그룹 이동 (학습은 제외의 맨 위로, 제외는 학습의 맨 아래로)',back:'소속 그룹(학습/제외) 안에서 맨 뒤로',up:'그룹 안에서 한 칸 앞으로',down:'그룹 안에서 한 칸 뒤로',upto:'커스텀 1번부터 선택한 구간까지 반복',hide:'숨기기(번호에서 제외)'};
+  var lt=LT.slice(),dvSel=selDv!=null;
+  if(el.children.length!==lt.length){
     el.innerHTML=lt.map(function(t){return '<button type="button" class="btn sm" data-lt="'+t[0]+'"></button>'}).join('');
   }
   lt.forEach(function(t,i){
     var b=el.children[i];
-    b.dataset.tip=tips[t[0]];b.disabled=!ok;
+    b.dataset.tip=tips[t[0]];b.disabled=dvSel?!(t[0]==='up'||t[0]==='down'||t[0]==='div'):!ok;
     var inner=t[0]==='color'?'<i class="dot'+(c?' c'+c:'')+'"></i>':t[1];
     if(b.dataset.in!==inner){b.innerHTML=inner;b.dataset.in=inner}
   });
 }
+function renderTb(){
+  var el=$('#tbedit');if(!el)return;
+  var ok=S.order.indexOf(selId)>=0&&selDv==null,tb=TB.slice();
+  if(S.sm>0)tb.splice(2,0,['sogeo','소거']);
+  var key=tb.map(function(t){return t[0]}).join();
+  if(el.dataset.k!==key){
+    el.dataset.k=key;
+    el.innerHTML=tb.map(function(t){return '<button type="button" class="btn tbb" data-lt="'+t[0]+'">'+t[1]+'</button>'}).join('');
+  }
+  var tips={front:'맨앞: 먼저 구분선 아래나 자기 범위의 맨 앞으로 갑니다. 이미 거기면 한 번 더 눌러 반대 범위로 갑니다. 1초 꾹 누르면 구분선을 지나쳐 바로 범위의 맨 앞으로 갑니다.',back:'맨뒤: 먼저 구분선 위나 자기 범위의 맨 뒤로 갑니다. 이미 거기면 한 번 더 눌러 반대 범위로 갑니다. 1초 꾹 누르면 구분선을 지나쳐 바로 범위의 맨 뒤로 갑니다.',mid:'가운데: 한 번에 반대 범위로 넘깁니다 (범위 안은 밖의 맨 위로, 밖은 범위 안의 맨 아래로).',sogeo:'소거: 선택한 구간을 반복 범위 바로 뒤로 밀어내고 소거 범위를 1개 줄입니다.'};
+  Array.prototype.forEach.call(el.children,function(b){b.disabled=!ok;b.dataset.tip=tips[b.dataset.lt]||''});
+}
 function itemAct(id,act){
+  if(act==='div'){toggleDiv(id);return}
+  if((act==='up'||act==='down')&&selDv!=null){moveDiv(act==='up'?-1:1);return}
   if(act==='play'){
     if(mode==='range'){
       if(rangeList().indexOf(id)<0){toast('반복 범위 밖의 구간이에요. 범위 안의 구간에서 눌러 주세요');return}
@@ -1382,6 +1460,7 @@ function renderList(){
     st2.forEach(function(id){if(ok(id))out.push(itemHtml(id,S.order.indexOf(id),r))});
   }else if(prefs.sort==='custom'){
     S.order.forEach(function(id,p){
+      if(!f&&p>0&&dvList().indexOf(p)>=0)out.push('<li class="sepdv'+(selDv===p?' sel':'')+'" data-dv="'+p+'" aria-label="구분선"></li>');
       if(!f&&S.sm>0&&p===S.sm)out.push('<li class="divider">여기까지 소거 반복</li>');
       if(!f&&S.n!==0&&p===S.n)out.push('<li class="divider" data-div="1">여기부터 반복에서 제외 (외운 구간)</li>');
       if(ok(id))out.push(itemHtml(id,p,r));
@@ -1397,7 +1476,7 @@ function renderList(){
   var list=$('#list');var keep=list.scrollTop;
   list.innerHTML=out.join('');list.scrollTop=keep;
   lastNow=null;
-  renderLtools();
+  renderLtools();renderTb();
 }
 function renderBookmarks(){
   var bms=LS.get('looper:v1:bookmarks')||[];
@@ -1444,6 +1523,47 @@ $('#file').addEventListener('change',function(){
 $('#markbtn').addEventListener('click',mark);
 $('#hundo').addEventListener('click',undo);
 $('#hredo').addEventListener('click',redo);
+
+/* 2줄: 접기, 목록 맨위/맨밑, 화면 고정 */
+(function(){
+  var tb=$('#tb2'),fb=$('#tbfold'),sb=$('#tbscroll'),lb=$('#tblock');
+  var IC_UP='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12"/><path d="m7 14 5-5 5 5"/><path d="M12 9v11"/></svg>';
+  var IC_DN='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20h12"/><path d="m7 10 5 5 5-5"/><path d="M12 15V4"/></svg>';
+  var CH_D='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  var CH_U='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>';
+  var LK_C='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  var LK_O='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/></svg>';
+  var listEl=$('#list');
+  var folded=false;try{folded=localStorage.getItem('looper:v1:tbfold')==='1'}catch(_){}
+  function paintFold(){tb.classList.toggle('fold',folded);fb.innerHTML=folded?CH_U:CH_D;fb.setAttribute('aria-label',folded?'펼치기':'접기')}
+  fb.addEventListener('click',function(){folded=!folded;try{localStorage.setItem('looper:v1:tbfold',folded?'1':'0')}catch(_){}paintFold()});
+  paintFold();
+  function atTop(){return listEl.scrollTop<=2}
+  function paintScroll(){var top=atTop();sb.innerHTML=top?IC_DN:IC_UP;sb.setAttribute('aria-label',top?'목록 맨밑으로':'목록 맨위로')}
+  sb.addEventListener('click',function(){listEl.scrollTo({top:atTop()?listEl.scrollHeight:0,behavior:'smooth'})});
+  listEl.addEventListener('scroll',paintScroll,{passive:true});
+  new MutationObserver(paintScroll).observe(listEl,{childList:true});
+  paintScroll();
+  /* 화면 고정: 1초 꾹 눌러 켜고 끔. 켜면 안쪽 스크롤 영역만 스크롤된다 */
+  var locked=false,tm=null,fired=false;
+  function paintLock(){lb.firstElementChild.innerHTML=locked?LK_C:LK_O;lb.classList.toggle('on',locked);document.documentElement.classList.toggle('plock',locked);lb.setAttribute('aria-pressed',locked?'true':'false')}
+  function clr(){if(tm){clearTimeout(tm);tm=null}lb.classList.remove('hold')}
+  lb.addEventListener('pointerdown',function(e){if(e.button>0)return;fired=false;clr();lb.classList.add('hold');tm=setTimeout(function(){tm=null;lb.classList.remove('hold');fired=true;locked=!locked;paintLock();try{navigator.vibrate&&navigator.vibrate(30)}catch(_){}toast(locked?'화면을 고정했어요. 구간 목록 안에서만 스크롤돼요':'화면 고정을 풀었어요')},1000)});
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){lb.addEventListener(n,clr)});
+  lb.addEventListener('contextmenu',function(e){e.preventDefault()});
+  lb.addEventListener('click',function(){if(!fired)toast('1초 꾹 눌러야 켜고 꺼져요')});
+  function scrollable(el){
+    while(el&&el!==document.documentElement){
+      var cs=getComputedStyle(el),oy=cs.overflowY;
+      if((oy==='auto'||oy==='scroll')&&el.scrollHeight>el.clientHeight+1)return true;
+      el=el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove',function(e){if(locked&&!scrollable(e.target))e.preventDefault()},{passive:false});
+  document.addEventListener('wheel',function(e){if(locked&&!scrollable(e.target))e.preventDefault()},{passive:false});
+  paintLock();
+})();
 /* 하단 중앙 조작 막대 */
 var DK={
   play:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>',
@@ -1465,7 +1585,7 @@ function dockUi(){
   ['#dkfirst','#dkprev','#dkplay','#dkloop','#dknext','#dklast'].forEach(function(q){$(q).disabled=!ok});
 }
 function dockGo(id){
-  if(id==null||ix(id)<0)return;
+  if(id==null||ix(id)<0)return;navAnchor=null;
   var pl=false;try{pl=!!ready&&player.getPlayerState()===1}catch(_){}
   selId=id;selLine=null;render();
   var li=listEl.querySelector('.item[data-id="'+id+'"]');if(li&&li.scrollIntoView)li.scrollIntoView({block:'nearest'});
@@ -1842,8 +1962,11 @@ $('#stoploop').addEventListener('click',function(){stopMode();render()});
 var listEl=$('#list'), ldrag=null, justDragged=false;
 listEl.addEventListener('click',function(e){
   if(justDragged)return;
+  var dvr=e.target.closest('.sepdv');
+  if(dvr){selDv=Number(dvr.dataset.dv);render();return}
   var li=e.target.closest('.item');if(!li)return;
   if(e.target.closest('input'))return;
+  selDv=null;lastPickAt=performance.now();
   var id=Number(li.dataset.id);
   selId=id;selLine=null;render();
 });
@@ -1851,6 +1974,24 @@ $('#ltools').addEventListener('click',function(e){
   var b=e.target.closest('[data-lt]');if(!b||b.disabled)return;
   itemAct(selId,b.dataset.lt);
 });
+/* 2줄 편집 버튼: 맨앞/맨뒤는 1초 꾹 누르면 구분선을 지나쳐 범위 끝으로 */
+(function(){
+  var box=$('#tbedit'),tm=null,fired=false;
+  function clr(){if(tm){clearTimeout(tm);tm=null}}
+  box.addEventListener('pointerdown',function(e){
+    var b=e.target.closest('[data-lt]');fired=false;clr();
+    if(!b||b.disabled)return;
+    var a=b.dataset.lt;if(a!=='front'&&a!=='back')return;
+    tm=setTimeout(function(){tm=null;fired=true;try{navigator.vibrate&&navigator.vibrate(20)}catch(_){}move(selId,a,true)},1000);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){box.addEventListener(n,clr)});
+  box.addEventListener('click',function(e){
+    if(fired){fired=false;return}
+    var b=e.target.closest('[data-lt]');if(!b||b.disabled)return;
+    itemAct(selId,b.dataset.lt);
+  });
+  box.addEventListener('contextmenu',function(e){e.preventDefault()});
+})();
 listEl.addEventListener('change',function(e){
   if(e.target.id==='nmin'){
     var j=ix(selId);if(j<0)return;
@@ -2025,6 +2166,7 @@ var listActive=false,lastArrow={k:'',t:0};
 document.addEventListener('pointerdown',function(e){
   var card=listEl.closest('section');
   listActive=!!(card&&card.contains(e.target));
+  if(e.target.closest&&e.target.closest('.item'))navAnchor=null;
   markActive();
 },true);
 function markActive(){
@@ -2036,7 +2178,18 @@ markActive();
 function listNav(d){
   var ids=Array.prototype.map.call(listEl.querySelectorAll('.item'),function(el){return Number(el.dataset.id)});
   if(!ids.length)return;
-  var i=ids.indexOf(selId),j=i<0?0:Math.max(0,Math.min(ids.length-1,i+d));
+  /* 듣는 구간과 선택한 구간이 다르면 듣는 구간 기준. 목록을 누른 지 1초 이내면 선택한 구간 기준 */
+  var baseId=selId;
+  if(!(navAnchor&&navAnchor.id===selId)&&mode!=='idle'&&cur!=null&&cur!==selId&&ids.indexOf(cur)>=0&&performance.now()-lastPickAt>1000){
+    var pl0=false;try{pl0=!!ready&&player.getPlayerState()===1}catch(_){}
+    if(pl0)baseId=cur;
+  }
+  var i=ids.indexOf(baseId),j=i<0?0:Math.max(0,Math.min(ids.length-1,i+d));
+  if(navAnchor&&navAnchor.id===selId){
+    var tg=d>0?navAnchor.next:navAnchor.prev;navAnchor=null;
+    var tj=tg==null?-1:ids.indexOf(tg);
+    if(tj<0)return;j=tj;i=-1;
+  }
   if(i>=0&&j===i)return;
   var id=ids[j],pl=false;try{pl=!!ready&&player.getPlayerState()===1}catch(_){}
   selId=id;selLine=null;render();
@@ -2124,7 +2277,30 @@ function applyUI(){
   if(UI.theme==='light'||UI.theme==='dark')document.documentElement.setAttribute('data-theme',UI.theme);
   else document.documentElement.removeAttribute('data-theme');
 }
-function saveUI(){LS.set('looper:v1:ui',UI)}
+function uiSlot(){return window.innerWidth<700?'ph':'pc'}
+function uiOther(){return uiSlot()==='ph'?'pc':'ph'}
+function uiCopy(){var o=JSON.parse(JSON.stringify(UI));delete o._at;return o}
+function uiLinked(){return LS.get('looper:v1:uilink')===1}
+function uiSlots(){var s=LS.get('looper:v1:uislots')||{};var c=s[uiSlot()];if(!c||(c.at||0)<=(UI._at||0))s[uiSlot()]={v:uiCopy(),at:UI._at||0};return s}
+function saveUI(){
+  UI._at=Date.now();LS.set('looper:v1:ui',UI);
+  if(uiLinked()){var s=LS.get('looper:v1:uislots')||{};s[uiOther()]={v:uiCopy(),at:UI._at};LS.set('looper:v1:uislots',s)}
+  try{schedulePush()}catch(e){}
+}
+function uiAdopt(sl){UI=JSON.parse(JSON.stringify(sl.v||{}));UI._at=sl.at||Date.now();LS.set('looper:v1:ui',UI);applyUI();buildTuner();if(S&&dur)renderTimeline()}
+function uiMerge(inc){
+  if(!inc)return;
+  var s=LS.get('looper:v1:uislots')||{},chg=false;
+  ['pc','ph'].forEach(function(k){
+    if(!inc[k]||!inc[k].v)return;
+    if((!s[k]||(inc[k].at||0)>(s[k].at||0))){s[k]=inc[k];chg=true}
+  });
+  if(chg)LS.set('looper:v1:uislots',s);
+  if(uiLinked()){
+    var best=null;['pc','ph'].forEach(function(k){if(inc[k]&&inc[k].v&&(!best||(inc[k].at||0)>best.at))best=inc[k]});
+    if(best&&(best.at||0)>(UI._at||0))uiAdopt(best);
+  }
+}
 function buildTuner(){
   $('#tunerows').innerHTML=UIDEF.map(function(d){
     return '<div class="tr"><label for="tu-'+d.k+'">'+d.label+'</label><input type="range" id="tu-'+d.k+'" min="'+d.min+'" max="'+d.max+'" step="'+d.step+'" value="'+uiVal(d)+'"><output id="to-'+d.k+'">'+uiVal(d)+d.unit+'</output></div>';
@@ -2157,6 +2333,20 @@ $('#tc-mark-reset').addEventListener('click',function(){delete UI.mark;applyUI()
 $('#tc-theme').addEventListener('change',function(){
   if(this.value==='auto')delete UI.theme;else UI.theme=this.value;
   applyUI();saveUI();buildTuner();
+});
+$('#ui-link').checked=uiLinked();
+$('#ui-link').addEventListener('change',function(){
+  LS.set('looper:v1:uilink',this.checked?1:0);
+  if(this.checked){saveUI();toast('PC·폰 모양을 연동해요. 최근에 바꾼 것으로 맞춰집니다')}else toast('연동을 껐어요. 각자 따로 씁니다');
+});
+$('#ui-send').addEventListener('click',function(){
+  var s=LS.get('looper:v1:uislots')||{};s[uiOther()]={v:uiCopy(),at:Date.now()};LS.set('looper:v1:uislots',s);
+  try{schedulePush()}catch(e){}toast('이 모양을 '+(uiOther()==='pc'?'PC':'폰')+' 쪽으로 보냈어요. 그 기기에서 "가져오기"를 누르세요');
+});
+$('#ui-get').addEventListener('click',function(){
+  var s=LS.get('looper:v1:uislots')||{},o=s[uiSlot()];
+  if(!o||!o.v||(o.at||0)<=(UI._at||0)){toast('새로 보낸 모양이 없어요. 다른 기기에서 먼저 복사하고 동기화하세요');return}
+  uiAdopt(o);toast('다른 기기에서 보낸 모양을 적용했어요');
 });
 $('#tune-reset').addEventListener('click',function(){UI={};applyUI();saveUI();buildTuner();if(S&&dur)renderTimeline();toast('UI를 처음 모양으로 되돌렸어요')});
 $('#tune-copy').addEventListener('click',function(){
@@ -2714,7 +2904,7 @@ function setPip(on){
   if(on===pipOn)return;pipOn=on;
   if(on){
     pslot.style.height=pwrapEl.getBoundingClientRect().height+'px';
-    if(!prefs.pip){var w=innerWidth<700?Math.round(innerWidth*0.4):200;prefs.pip={w:w,x:innerWidth-w-12,y:innerHeight-pipH(w)-12}}
+    if(!prefs.pip){var w=innerWidth<700?Math.round(innerWidth*0.89):200;prefs.pip=innerWidth<700?{w:w,x:Math.round((innerWidth-w)/2),y:12}:{w:w,x:innerWidth-w-12,y:innerHeight-pipH(w)-12}}
     pwrapEl.classList.add('pip');applyPip();
   }else{
     pwrapEl.classList.remove('pip');pslot.style.height='';
@@ -2859,7 +3049,7 @@ function buildBackup(){
     var k=localStorage.key(i);
     if(k.indexOf('looper:v1:state:')===0){var v=LS.get(k);if(validState(v))states[k.slice(16)]=v}
   }
-  return {app:'gureongmul',ver:1,at:Date.now(),states:states,bookmarks:LS.get('looper:v1:bookmarks')||[],recent:getRecent(),bmdel:LS.get('looper:v1:bmdel')||{}};
+  return {app:'gureongmul',ver:1,at:Date.now(),states:states,bookmarks:LS.get('looper:v1:bookmarks')||[],recent:getRecent(),bmdel:LS.get('looper:v1:bmdel')||{},ui:uiSlots()};
 }
 $('#bkexp').addEventListener('click',function(){
   var obj=buildBackup(),n=Object.keys(obj.states).length;
@@ -2874,7 +3064,7 @@ $('#bkfile').addEventListener('change',function(){
   fr.onload=function(){var o;try{o=JSON.parse(fr.result)}catch(e){toast('백업 파일을 읽을 수 없어요');return}importBackup(o)};
   fr.readAsText(f);
 });
-function H(x){return JSON.stringify({s:x.secs,o:x.order,n:x.n,nx:x.nx||0,sm:x.sm||0,sc:x.sc||0})}
+function H(x){return JSON.stringify({s:x.secs,o:x.order,n:x.n,nx:x.nx||0,sm:x.sm||0,sc:x.sc||0,d:x.dv||[]})}
 function mergeBackup(o,base){
   var bms=LS.get('looper:v1:bookmarks')||[],have={};bms.forEach(function(b){have[b.id]=1});
   var res={added:0,kept:0,took:0,bmAdd:0,curChanged:false},rid=0;
@@ -2913,6 +3103,7 @@ function mergeBackup(o,base){
     var lb=bms.filter(function(x){return x.id===b.id})[0];
     if(lb&&(b.la||0)>(lb.la||0)){lb.lock=!!b.lock;lb.la=b.la;res.bmAdd++}
   });
+  uiMerge(o.ui);
   var tk=Object.keys(tomb);
   if(tk.length>500){tk.sort(function(a,b){return tomb[b]-tomb[a]}).slice(500).forEach(function(k){delete tomb[k]});tchg=true}
   if(tchg)LS.set('looper:v1:bmdel',tomb);
