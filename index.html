@@ -255,6 +255,14 @@ html.plock,html.plock body{overflow:hidden;overscroll-behavior:none}
 .dock .round.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 .tunebtn{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(66px + env(safe-area-inset-bottom,0px));z-index:30;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.helpov{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.helpov[hidden]{display:none}
+.helpbox{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;width:min(460px,100%);max-height:86vh;overflow:auto;padding:16px;box-shadow:0 10px 36px rgba(0,0,0,.45)}
+.helpbox h3{margin:0 0 10px;font-size:1.1em}
+.helpbox ol{margin:0 0 12px;padding-left:20px}.helpbox li{margin:6px 0}
+.helpbox details{border-top:1px solid var(--line);padding:8px 0}
+.helpbox summary{cursor:pointer;font-weight:600}
+.helpbox details p{margin:6px 0;color:var(--muted)}
 .tune{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(112px + env(safe-area-inset-bottom,0px));z-index:30;width:min(340px,calc(100% - 24px));max-height:calc(100vh - 140px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.3)}
 .tune.min{width:auto;padding:8px 10px;overflow:visible}
 .tune.min>:not(.thead){display:none}
@@ -413,7 +421,8 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
           <button class="btn sm primary" id="bkexp" type="button" data-tip="모든 영상의 편집, 북마크, 최근 영상 기록을 파일 하나로 내려받습니다. 폰과 컴퓨터 사이에 옮길 때 쓰세요.">전체 백업 내려받기</button>
           <button class="btn sm" id="bkimp" type="button" data-tip="백업 파일을 불러옵니다. 같은 영상에 양쪽 편집이 있으면 마지막 수정이 더 최근인 쪽이 남고, 다른 쪽은 북마크로 저장됩니다.">백업 불러오기</button>
           <input type="file" id="bkfile" accept=".json,application/json" hidden>
-          <button class="btn sm primary" id="tunebtn" type="button" style="margin-left:auto">UI 조절</button>
+          <button class="btn sm" id="helpbtn" type="button" style="margin-left:auto">도움말</button>
+          <button class="btn sm primary" id="tunebtn" type="button">UI 조절</button>
         </div>
         <div class="syncbox">
           <div class="hint"><b>다른 기기와 동기화 (GitHub Gist)</b></div>
@@ -456,6 +465,23 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
   <button class="btn round" id="dklast" type="button" data-tip="마지막 구간으로 (재생 중이면 바로 재생)" aria-label="맨뒤 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 5v14"/><path d="M5 5l9 7-9 7z" fill="currentColor"/></svg></button>
 </div>
 <div class="undofix"><button class="btn round" id="hundo" type="button" data-tip="실행취소 (Ctrl+Z)" aria-label="실행취소">↶</button><button class="btn round" id="hredo" type="button" data-tip="다시실행 (Ctrl+Y)" aria-label="다시실행">↷</button></div>
+<div class="helpov" id="helpov" hidden>
+  <div class="helpbox" role="dialog" aria-label="도움말">
+    <h3>처음이라면 이 순서로</h3>
+    <ol>
+      <li><b>영상 불러오기</b> 링크를 붙여 넣거나 내 파일을 고릅니다.</li>
+      <li><b>문장마다 자르기</b> 영상을 재생하다가 문장이 끝나면 "컷"을 누릅니다. 목록에 구간이 쌓입니다.</li>
+      <li><b>반복해서 듣기</b> 맨 아래 ▶로 구간을 차례로 재생합니다. 🔁는 선택한 구간 하나를 반복하고, 한 번 더 누르면 전체 반복입니다. ‹ ›는 이전·다음 구간입니다.</li>
+      <li><b>외운 건 빼기</b> 외운 구간은 "가운데"로 빼면 반복 범위에서 빠집니다. 남은 것만 계속 연습합니다.</li>
+    </ol>
+    <details><summary>맨앞·맨뒤와 구분선</summary><p>구간 행의 ㅡ 버튼으로 구분선을 만들고 지웁니다. ⏮ ⏭와 2줄의 맨앞·맨뒤는 짧게 누르면 구분선에서 한 단계씩 멈춥니다. 맨뒤에서 막히고, 다시 누르면 구분선 바로 뒤, 또 누르면 그 묶음의 맨뒤입니다. 1초 꾹 누르면 구분선을 무시하고 전체의 맨앞·맨뒤로 갑니다.</p></details>
+    <details><summary>소거</summary><p>소거를 켜면 앞에서 지정한 개수만 반복하고, 소거 버튼으로 외운 구간을 하나씩 빼냅니다. 마지막 하나를 빼면 소거가 끝납니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다.</p></details>
+    <details><summary>화면 고정 🔒 · ⤒/⤓</summary><p>🔒를 1초 꾹 누르면 화면이 고정되고 구간 목록 안에서만 스크롤됩니다. 다시 1초 꾹 누르면 풀립니다. ⤒/⤓는 목록을 맨위·맨밑으로 보냅니다. 1초 꾹 누르면 닫아 둔 작은 영상 창이 다시 나옵니다.</p></details>
+    <details><summary>이어폰</summary><p>한 번 터치는 재생·정지, 두 번은 다음 구간, 세 번은 이전 구간입니다. 이어폰으로 멈추면 앱의 정지와 같고, 다시 시작하면 멈춘 자리에서 이어집니다. (유튜브 영상에서는 기기에 따라 두 번·세 번 터치가 안 될 수 있습니다.)</p></details>
+    <details><summary>백업·동기화</summary><p>백업 줄에서 파일로 내려받거나 불러옵니다. 동기화를 켜면 폰과 컴퓨터가 같은 편집을 공유합니다. UI 조절의 "다른 기기로 복사"로 화면 모양도 옮길 수 있습니다.</p></details>
+    <div class="row2" style="margin-top:12px;justify-content:flex-end"><button class="btn sm primary" id="helpclose" type="button">닫기</button></div>
+  </div>
+</div>
 <div class="tune" id="tune" hidden>
   <div class="row2 thead" style="justify-content:space-between;margin-bottom:8px"><b>UI 조절 (임시)</b><span class="row2"><button class="btn sm" id="tunemin" type="button">접기</button><button class="btn sm" id="tuneclose" type="button">닫기</button></span></div>
   <div id="tunerows"></div>
@@ -1569,7 +1595,25 @@ $('#hredo').addEventListener('click',redo);
   paintFold();
   function atTop(){return listEl.scrollTop<=2}
   function paintScroll(){var top=atTop();sb.innerHTML=top?IC_DN:IC_UP;sb.setAttribute('aria-label',top?'목록 맨밑으로':'목록 맨위로')}
-  sb.addEventListener('click',function(){listEl.scrollTo({top:atTop()?listEl.scrollHeight:0,behavior:'smooth'})});
+  /* 짧게=맨위/맨밑 이동, 1초 꾹=닫아 둔 작은 창 되살리기 (고정 중에도, 영상 자리가 화면 밖일 때만) */
+  var stm=null,sfired=false;
+  function sclr(){if(stm){clearTimeout(stm);stm=null}}
+  sb.addEventListener('pointerdown',function(e){
+    if(e.button>0)return;sfired=false;sclr();
+    stm=setTimeout(function(){
+      stm=null;sfired=true;
+      try{navigator.vibrate&&navigator.vibrate(20)}catch(_){}
+      try{
+        var r=pslot.getBoundingClientRect(),vis=Math.min(r.bottom,innerHeight)-Math.max(r.top,0);
+        if(pipDismissed&&vis<r.height*0.2){pipDismissed=false;setPip(true);toast('작은 창을 다시 띄웠어요')}
+      }catch(_){}
+    },1000);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){sb.addEventListener(n,sclr)});
+  sb.addEventListener('contextmenu',function(e){e.preventDefault()});
+  sb.addEventListener('click',function(){
+    if(sfired){sfired=false;return}
+    listEl.scrollTo({top:atTop()?listEl.scrollHeight:0,behavior:'smooth'})});
   listEl.addEventListener('scroll',paintScroll,{passive:true});
   new MutationObserver(paintScroll).observe(listEl,{childList:true});
   paintScroll();
@@ -1622,6 +1666,13 @@ function dockGo(id){
   if(mode==='single')startSingle(id);else itemAct(id,'play');
 }
 $('#dkprev').addEventListener('click',function(){listNav(-1)});
+/* 이어폰 두 번 터치=다음, 세 번 터치=이전 (폰이 보내는 미디어 키 신호) */
+try{
+  if(navigator.mediaSession){
+    navigator.mediaSession.setActionHandler('nexttrack',function(){if(S&&S.order.length)listNav(1)});
+    navigator.mediaSession.setActionHandler('previoustrack',function(){if(S&&S.order.length)listNav(-1)});
+  }
+}catch(_){}
 $('#dknext').addEventListener('click',function(){listNav(1)});
 /* 맨앞/맨뒤: 짧게=구분선에서 막힘(막힌 상태에서 한 번 더 누르면 구분선 바로 뒤/앞, 또 누르면 그 묶음 끝), 1초 꾹=전체 맨앞/맨뒤 */
 function dockEdge(front,full){
@@ -2379,6 +2430,17 @@ function buildTuner(){
   $('#tc-mark').value=hex(UI.mark||cs.getPropertyValue('--mark'));
 }
 function setTuning(on){$('#tune').hidden=!on;document.documentElement.classList.toggle('tuning',on)}
+(function(){
+  var ov=$('#helpov');
+  function open(){ov.hidden=false}
+  function close(){ov.hidden=true;try{localStorage.setItem('looper:v1:helpseen','1')}catch(_){}}
+  $('#helpbtn').addEventListener('click',open);
+  $('#helpclose').addEventListener('click',close);
+  ov.addEventListener('click',function(e){if(e.target===ov)close()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!ov.hidden)close()});
+  var seen=false;try{seen=localStorage.getItem('looper:v1:helpseen')==='1'}catch(_){}
+  if(!seen)setTimeout(open,600);
+})();
 $('#tunebtn').addEventListener('click',function(){setTuning($('#tune').hidden)});
 $('#tuneclose').addEventListener('click',function(){setTuning(false)});
 $('#tunemin').addEventListener('click',function(){var m=$('#tune').classList.toggle('min');this.textContent=m?'펼치기':'접기'});
