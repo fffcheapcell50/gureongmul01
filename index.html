@@ -487,7 +487,7 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
     <details><summary>화면 고정 🔒 · ⤒/⤓</summary><p>🔒를 1초 꾹 누르면 화면이 고정되고 구간 목록 안에서만 스크롤됩니다. 다시 1초 꾹 누르면 풀립니다. ⤒/⤓는 목록을 맨위·맨밑으로 보냅니다. 1초 꾹 누르면 닫아 둔 작은 영상 창이 다시 나옵니다.</p></details>
     <details><summary>키보드</summary><p>구간 목록을 누른 상태에서 씁니다. 키마다 짧게 누르기와 1초 꾹 누르기가 있고 버튼과 같은 동작입니다. A·D 이전·다음 구간(꾹: 묶음 맨앞·맨뒤), W 자동 재생 켜기·멈춤(꾹: 반복 재생), S 지금 구간 처음부터(꾹: 구분선), ← → 구간 이동(꾹: 묶음 맨앞·맨뒤), ↑ 소거 켜기·끄기(꾹: 연속 소거), ↓ 소거(꾹: 제외), Q·E 실행취소·다시실행, Space 재생·정지.</p></details>
     <details><summary>설명 말풍선</summary><p>버튼이나 ? 표시를 1초 가까이 꾹 누르면 설명 말풍선이 뜹니다. 손을 떼도 남아 있고, 다른 곳을 누르면 닫힙니다. PC에서는 마우스를 올려도 뜹니다.</p></details>
-    <details><summary>이어폰</summary><p>한 번 터치는 재생·정지, 두 번은 다음 구간, 세 번은 이전 구간입니다. 이어폰으로 멈추면 앱의 정지와 같고, 다시 시작하면 멈춘 자리에서 이어집니다. (유튜브 영상에서는 기기에 따라 두 번·세 번 터치가 안 될 수 있습니다.)</p></details>
+    <details><summary>이어폰</summary><p>한 번 터치는 재생·정지, 두 번은 다음 구간, 세 번은 이전 구간입니다. 이어폰으로 멈추면 앱의 정지와 같고, 다시 시작하면 멈춘 자리에서 이어집니다. (유튜브 영상에서는 앱이 무음 소리를 깔아서 이어폰 신호를 받습니다. 폰이나 브라우저에 따라 두 번·세 번 터치가 안 될 수 있습니다.)</p></details>
     <details><summary>백업·동기화</summary><p>백업 줄에서 파일로 내려받거나 불러옵니다. 동기화를 켜면 폰과 컴퓨터가 같은 편집을 공유합니다. UI 조절의 "다른 기기로 복사"로 화면 모양도 옮길 수 있습니다.</p></details>
     <div class="row2" style="margin-top:12px;justify-content:flex-end"><button class="btn sm primary" id="helpclose" type="button">닫기</button></div>
   </div>
@@ -876,7 +876,27 @@ function readDur(){
   return player.getDuration()||0;
 }
 function applyRate(){if(ready&&player&&player.setPlaybackRate)try{player.setPlaybackRate(S.rate)}catch(e){}}
+/* 이어폰 신호 받기: 유튜브 영상일 때 무음 소리를 깔아서 앱이 미디어 플레이어가 되게 한다 */
+var silentEl=null;
+function silentWav(){
+  var rate=8000,sec=10,n=rate*sec,buf=new ArrayBuffer(44+n),v=new DataView(buf);
+  function str(o,t){for(var i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))}
+  str(0,'RIFF');v.setUint32(4,36+n,true);str(8,'WAVE');str(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,rate,true);v.setUint32(28,rate,true);v.setUint16(32,1,true);v.setUint16(34,8,true);str(36,'data');v.setUint32(40,n,true);
+  for(var i=0;i<n;i++)v.setUint8(44+i,128);
+  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+}
+function silentStart(){
+  if(src==='local'||!navigator.mediaSession)return;
+  try{
+    if(!silentEl){silentEl=new Audio(silentWav());silentEl.loop=true;silentEl.volume=0.01}
+    if(silentEl.paused){var pr=silentEl.play();if(pr&&pr.catch)pr.catch(function(){})}
+    navigator.mediaSession.metadata=new MediaMetadata({title:'구간 그물',artist:'구간 반복 연습'});
+  }catch(_){}
+}
 function onState(e){
+  if(e.data===1)silentStart();
+  try{if(navigator.mediaSession)navigator.mediaSession.playbackState=(e.data===1)?'playing':'paused'}catch(_){}
   $('#pp').textContent=(e.data===1)?'정지':'재생';
   if(typeof dockUi==='function')setTimeout(dockUi,0);
   if(e.data===1){applyRate();if(!dur){dur=readDur();if(dur)render()}}
@@ -1726,9 +1746,11 @@ function dockGroupEdge(d){
 }
 holdBind($('#dkprev'),function(){listNav(-1)},function(){dockGroupEdge(-1)});
 holdBind($('#dknext'),function(){listNav(1)},function(){dockGroupEdge(1)});
-/* 이어폰 두 번 터치=다음, 세 번 터치=이전 (폰이 보내는 미디어 키 신호) */
+/* 이어폰 한 번=재생·정지, 두 번=다음, 세 번=이전 (폰이 보내는 미디어 키 신호) */
 try{
   if(navigator.mediaSession){
+    navigator.mediaSession.setActionHandler('play',function(){if(resume){doResume();return}try{player.playVideo()}catch(_){}});
+    navigator.mediaSession.setActionHandler('pause',function(){try{player.pauseVideo()}catch(_){}});
     navigator.mediaSession.setActionHandler('nexttrack',function(){if(S&&S.order.length)listNav(1)});
     navigator.mediaSession.setActionHandler('previoustrack',function(){if(S&&S.order.length)listNav(-1)});
   }
