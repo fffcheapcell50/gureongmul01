@@ -63,6 +63,7 @@ input.numin{width:64px;text-align:center;font-weight:700;padding:5px 4px;border:
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 .btn.mark{background:var(--mark);color:#fff;border-color:var(--mark);font-weight:700;font-size:17px;min-height:52px;flex:1 1 160px}
 .btn.on{background:var(--accent-soft);border-color:var(--accent)}
+.btn.sgauto{border-width:3px;border-color:var(--accent)}
 .btn.danger{color:var(--danger)}
 .btn.sm{padding:4px 8px;min-height:var(--btnsm,32px);font-size:13px}
 .grid{display:grid;gap:var(--gap,16px);grid-template-columns:minmax(0,1fr)}
@@ -354,13 +355,13 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
         <button class="fold" type="button" aria-expanded="true"><i class="chev"></i><span>반복 범위 <span class="qm" data-tip="커스텀 순번 1번부터 범위 끝까지 차례로 돌고 다시 처음으로 돌아갑니다. 외운 구간은 맨뒤로 보내고 범위를 줄이면 빠집니다. 숨긴 구간은 건너뜁니다.">?</span></span></button>
         <div class="fbody">
         <div class="row2">
-          <div class="field"><span id="nlab">앞에서</span>
+          <div class="field" id="nfield" style="display:none"><span id="nlab">앞에서</span>
             <button class="btn sm" id="nminus" type="button">-</button>
             <input type="text" inputmode="numeric" class="mono numin" id="nval" value="전체" aria-label="앞에서 개수">
             <button class="btn sm" id="nplus" type="button">+</button>
             개
           </div>
-          <button class="btn sm" id="nall" type="button">전체</button>
+          <button class="btn sm" id="nall" type="button" style="display:none">전체</button>
           <div class="field">구간당
             <select id="reps" class="btn sm"><option value="1">1번</option><option value="2">2번</option><option value="3">3번</option><option value="5">5번</option></select>
           </div>
@@ -372,7 +373,7 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
             <button class="btn sm" id="splus" type="button">+</button>
             개
           </div>
-          <button class="btn sm" id="smode" type="button" data-tip="소거 반복: 전체 목록 맨 앞에서 정한 개수만 반복합니다. 켜져 있는 동안 목록의 '가운데' 버튼이 '소거'로 바뀌고, 누르면 그 구간이 범위 바로 뒤로 밀려나며 범위가 1개 줄어듭니다. 학습/제외 상태는 바뀌지 않습니다. 1개 남았을 때 한 번 더 누르면 꺼집니다.">소거 시작</button>
+          <button class="btn sm" id="smode" type="button" data-tip="소거 반복: 전체 목록 맨 앞에서 정한 개수만 반복합니다. 켜져 있는 동안 2줄의 소거 버튼을 누르면 그 구간이 범위 바로 뒤로 밀려나며 범위가 1개 줄어듭니다. 연속 소거는 2줄 소거 버튼을 꾹 눌러 켭니다. 학습/제외 상태는 바뀌지 않습니다. 1개 남았을 때 한 번 더 누르면 꺼집니다.">소거 시작</button>
         </div>
         <div class="row2" style="margin-top:10px">
           <button class="btn primary" id="startloop" type="button" data-tip="선택한 구간이 범위 안에 있으면 거기서부터, 아니면 범위의 처음부터 반복합니다.">범위 반복 시작</button>
@@ -474,8 +475,8 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
       <li><b>반복해서 듣기</b> 맨 아래 ▶로 구간을 차례로 재생합니다. 🔁는 선택한 구간 하나를 반복하고, 한 번 더 누르면 전체 반복입니다. ‹ ›는 이전·다음 구간입니다.</li>
       <li><b>외운 건 빼기</b> 외운 구간은 "가운데"로 빼면 반복 범위에서 빠집니다. 남은 것만 계속 연습합니다.</li>
     </ol>
-    <details><summary>맨앞·맨뒤와 구분선</summary><p>구간 행의 ㅡ 버튼으로 구분선을 만들고 지웁니다. ⏮ ⏭와 2줄의 맨앞·맨뒤는 짧게 누르면 구분선에서 한 단계씩 멈춥니다. 맨뒤에서 막히고, 다시 누르면 구분선 바로 뒤, 또 누르면 그 묶음의 맨뒤입니다. 1초 꾹 누르면 구분선을 무시하고 전체의 맨앞·맨뒤로 갑니다.</p></details>
-    <details><summary>소거</summary><p>소거를 켜면 앞에서 지정한 개수만 반복하고, 소거 버튼으로 외운 구간을 하나씩 빼냅니다. 마지막 하나를 빼면 소거가 끝납니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다.</p></details>
+    <details><summary>맨앞·맨뒤와 구분선</summary><p>‹ ›는 꾹 누르면 지금 묶음의 맨앞·맨뒤로 가고, 구간 목록의 ↑ ↓는 꾹 누르면 묶음 안에서 맨앞·맨뒤로 옮깁니다. 정지 중에는 짧게 누르면 선택만 옮기고, 꾹 누르면 이동해서 재생합니다. 구간 행의 ㅡ 버튼으로 구분선을 만들고 지웁니다. ⏮ ⏭와 2줄의 맨앞·맨뒤는 짧게 누르면 구분선에서 한 단계씩 멈춥니다. 맨뒤에서 막히고, 다시 누르면 구분선 바로 뒤, 또 누르면 그 묶음의 맨뒤입니다. 1초 꾹 누르면 구분선을 무시하고 전체의 맨앞·맨뒤로 갑니다.</p></details>
+    <details><summary>소거</summary><p>2줄의 소거 버튼으로 켭니다. 짧게 누르면 일반 소거, 1초 꾹 누르면 연속 소거입니다(테두리가 두꺼워짐). 소거 개수 칸은 짧게 누르면 5·10·15·20으로 바뀌고 꾹 누르면 직접 입력합니다. 소거 중에 소거 버튼을 짧게 누르면 선택한 구간이 빠지고, 꾹 누르면 제외입니다. 마지막 하나까지 빼면 소거가 끝나고, 연속 소거는 빠진 구간을 맨 뒤로 보내 다음 묶음으로 바로 이어집니다. 끄려면 반복 범위 카드의 "소거 중 (끄기)"를 누릅니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다.</p></details>
     <details><summary>화면 고정 🔒 · ⤒/⤓</summary><p>🔒를 1초 꾹 누르면 화면이 고정되고 구간 목록 안에서만 스크롤됩니다. 다시 1초 꾹 누르면 풀립니다. ⤒/⤓는 목록을 맨위·맨밑으로 보냅니다. 1초 꾹 누르면 닫아 둔 작은 영상 창이 다시 나옵니다.</p></details>
     <details><summary>이어폰</summary><p>한 번 터치는 재생·정지, 두 번은 다음 구간, 세 번은 이전 구간입니다. 이어폰으로 멈추면 앱의 정지와 같고, 다시 시작하면 멈춘 자리에서 이어집니다. (유튜브 영상에서는 기기에 따라 두 번·세 번 터치가 안 될 수 있습니다.)</p></details>
     <details><summary>백업·동기화</summary><p>백업 줄에서 파일로 내려받거나 불러옵니다. 동기화를 켜면 폰과 컴퓨터가 같은 편집을 공유합니다. UI 조절의 "다른 기기로 복사"로 화면 모양도 옮길 수 있습니다.</p></details>
@@ -1137,9 +1138,31 @@ function adjust(which,d){
 var lastPickAt=0;
 var navAnchor=null; /* 편집으로 옮긴 구간의 이전 자리: 다음/이전 이동은 이 자리를 기준으로 한다 */
 function setAnchor(id,o,p){if(navAnchor&&navAnchor.id===id)return;navAnchor={id:id,prev:o[p-1],next:o[p+1]}}
+var sgAuto=false,sgRemoved=[];
+function sgFinish(id){
+  var o=S.order,N=S.sc||0,n=o.length,p=o.indexOf(id);
+  if(p>=0){o.splice(p,1);o.push(id)}
+  if(sgAuto&&N>0&&n>1){
+    var rm=sgRemoved.filter(function(x){return x!==id&&o.indexOf(x)>=0}),last=o.pop();
+    var rest=o.filter(function(x){return rm.indexOf(x)<0});
+    S.order=rest.concat(rm,[last]);
+    S.sm=Math.min(N,n);S.sc=S.sm;sgRemoved=[];
+    commit();
+    if(ready&&dur)startRange(true);
+    toast('연속 소거: 다음 '+S.sm+'개를 시작해요');
+    return;
+  }
+  S.sm=0;S.sc=0;sgAuto=false;sgRemoved=[];stopMode(true);commit();toast('소거를 마쳤어요. 소거 모드를 껐어요');
+}
 function move(id,how,full){
   var o=S.order,p=o.indexOf(id);if(p<0)return;
   var b=S.sm>0?Math.min(S.sm,o.length):rEnd(),inR=p<b,lo=inR?0:b,hi=inR?b-1:o.length-1;
+  if(how==='gup'||how==='gdown'){
+    var gu=how==='gup',gt=gu?lo:hi;
+    dvList().forEach(function(k){if(gu){if(k<=p&&k>gt)gt=k}else{if(k-1>=p&&k-1<gt)gt=k-1}});
+    if(gt===p){toast('이미 묶음의 맨 '+(gu?'앞':'뒤')+'이에요');return}
+    setAnchor(id,o,p);o.splice(p,1);o.splice(gt,0,id);commit();return;
+  }
   var front=(how==='front'||how==='up'),edge=front?p===lo:p===hi;
   function setB(v){if(S.sm>0)S.sm=v;else S.n=v}
   if(!edge){
@@ -1168,8 +1191,7 @@ function move(id,how,full){
   if(inR){
     if(b<=1){
       if(S.sm>0){ /* 소거 중 마지막 1개: 맨 끝으로 보내며 소거를 끝낸다 */
-        setAnchor(id,o,p);o.splice(p,1);o.push(id);
-        S.sm=0;S.sc=0;stopMode(true);commit();toast('소거를 마쳤어요. 소거 모드를 껐어요');return;
+        setAnchor(id,o,p);sgFinish(id);return;
       }
       toast('반복 범위에는 최소 1개가 있어야 해요');return;
     }
@@ -1204,10 +1226,10 @@ function moveMid(id,kind){
   var o=S.order,p=o.indexOf(id),r=rEnd();
   if(p<0)return;
   if(kind==='sogeo'){
-    if(!(S.sm>0)){toast('소거 모드가 꺼져 있어요');return}
-    if(p>=S.sm){setAnchor(id,o,p);o.splice(p,1);o.splice(S.sm,0,id);S.sm++;commit();toast('다시 넣었어요. 소거 범위 '+S.sm+'개');return}
-    if(S.sm<=1){S.sm=0;stopMode(true);commit();toast('소거를 마쳤어요. 소거 모드를 껐어요');return}
-    setAnchor(id,o,p);o.splice(p,1);o.splice(S.sm-1,0,id);S.sm--;
+    if(!(S.sm>0)){smStart(false);return}
+    if(p>=S.sm){setAnchor(id,o,p);o.splice(p,1);o.splice(S.sm,0,id);S.sm++;sgRemoved=sgRemoved.filter(function(x){return x!==id});commit();toast('다시 넣었어요. 소거 범위 '+S.sm+'개');return}
+    if(S.sm<=1){setAnchor(id,o,p);sgFinish(id);return}
+    setAnchor(id,o,p);o.splice(p,1);o.splice(S.sm-1,0,id);S.sm--;sgRemoved.push(id);
     commit();toast('소거했어요. 남은 범위 '+S.sm+'개');return;
   }
   if(p<r){
@@ -1371,7 +1393,8 @@ function zoomUi(){
 function renderStatusBits(){
   if(document.activeElement!==$('#sval'))$('#sval').value=smVal();
   $('#smode').textContent=S.sm>0?'소거 중 (끄기)':'소거 시작';
-  $('#smode').classList.toggle('on',S.sm>0);
+  if(!(S.sm>0))sgAuto=false;
+  $('#smode').classList.toggle('on',S.sm>0);$('#smode').classList.toggle('sgauto',sgAuto&&S.sm>0);
   if(document.activeElement!==$('#nval'))$('#nval').value=prefs.rev?(S.nx?S.nx:('전체 '+(S.order.length-rEnd()))):(S.n===0?('전체 '+S.order.length):S.n);
   $('#nlab').textContent=prefs.rev?'제외 앞에서':'앞에서';
   $('#revbtn').classList.toggle('on',prefs.rev);
@@ -1437,7 +1460,7 @@ function itemHtml(id,p,r){
     '<div class="meta"><b>'+(orig?('커스텀 '+(p+1)+'번'):('원래 '+o+'번'))+'</b><span class="mono">'+fmt(a)+' - '+fmt(b)+'</span>'+(isEx?'<span class="tag">제외</span>':'')+no+nm+memo+'</div></li>';
 }
 var LT=[['color',''],['up','↑'],['down','↓'],['upto','여기까지'],['div','ㅡ'],['hide','숨김']];
-var TB=[['front','맨앞'],['mid','가운데'],['back','맨뒤']];
+var TB=[['front','맨앞'],['sogeo','소거'],['back','맨뒤']];
 function renderLtools(){
   var el=$('#ltools');if(!el)return;
   var ok=S.order.indexOf(selId)>=0,c=ok?(S.secs[ix(selId)].c||0):0;
@@ -1456,14 +1479,14 @@ function renderLtools(){
 function renderTb(){
   var el=$('#tbedit');if(!el)return;
   var ok=S.order.indexOf(selId)>=0&&selDv==null,tb=TB.slice();
-  if(S.sm>0)tb.splice(2,0,['sogeo','소거']);
   var key=tb.map(function(t){return t[0]}).join();
   if(el.dataset.k!==key){
     el.dataset.k=key;
     el.innerHTML=tb.map(function(t){return '<button type="button" class="btn tbb" data-lt="'+t[0]+'">'+t[1]+'</button>'}).join('');
   }
   var tips={front:'맨앞: 먼저 구분선 아래나 자기 범위의 맨 앞으로 갑니다. 이미 거기면 한 번 더 눌러 반대 범위로 갑니다. 1초 꾹 누르면 구분선을 지나쳐 바로 범위의 맨 앞으로 갑니다.',back:'맨뒤: 먼저 구분선 위나 자기 범위의 맨 뒤로 갑니다. 이미 거기면 한 번 더 눌러 반대 범위로 갑니다. 1초 꾹 누르면 구분선을 지나쳐 바로 범위의 맨 뒤로 갑니다.',mid:'가운데: 한 번에 반대 범위로 넘깁니다 (범위 안은 밖의 맨 위로, 밖은 범위 안의 맨 아래로).',sogeo:'소거: 선택한 구간을 반복 범위 바로 뒤로 밀어내고 소거 범위를 1개 줄입니다.'};
-  Array.prototype.forEach.call(el.children,function(b){b.disabled=!ok;b.dataset.tip=tips[b.dataset.lt]||''});
+  tips.sogeo='소거: 꺼져 있으면 짧게 눌러 소거를 켜고, 1초 꾹 누르면 연속 소거로 켭니다. 소거 중에는 짧게 누르면 선택한 구간을 소거하고, 1초 꾹 누르면 제외합니다(범위에서 빼서 제외 구간으로).';
+  Array.prototype.forEach.call(el.children,function(b){b.disabled=(b.dataset.lt==='sogeo'&&!(S.sm>0))?selDv!=null:!ok;b.dataset.tip=tips[b.dataset.lt]||'';if(b.dataset.lt==='sogeo')b.classList.toggle('sgauto',sgAuto&&S.sm>0)});
 }
 function itemAct(id,act){
   if(act==='div'){toggleDiv(id);return}
@@ -1657,15 +1680,43 @@ function dockUi(){
   lp.classList.toggle('on',mode==='range'||mode==='single');
   ['#dkfirst','#dkprev','#dkplay','#dkloop','#dknext','#dklast'].forEach(function(q){$(q).disabled=!ok});
 }
-function dockGo(id){
+function dockGo(id,force){
   if(id==null||ix(id)<0)return;navAnchor=null;
   var pl=false;try{pl=!!ready&&player.getPlayerState()===1}catch(_){}
   selId=id;selLine=null;render();
   var li=listEl.querySelector('.item[data-id="'+id+'"]');if(li&&li.scrollIntoView)li.scrollIntoView({block:'nearest'});
-  if(!pl)return;
-  if(mode==='single')startSingle(id);else itemAct(id,'play');
+  if(!pl&&!force)return;
+  if(mode==='single')startSingle(id);
+  else if(mode==='range')itemAct(id,'play');
+  else if(rangeList().indexOf(id)>=0)startRange(false);
+  else itemAct(id,'play');
 }
-$('#dkprev').addEventListener('click',function(){listNav(-1)});
+function holdBind(el,shortFn,longFn){
+  var tm=null,fired=false;
+  function clr(){if(tm){clearTimeout(tm);tm=null}}
+  el.addEventListener('pointerdown',function(){fired=false;clr();if(el.disabled)return;tm=setTimeout(function(){tm=null;fired=true;try{navigator.vibrate&&navigator.vibrate(20)}catch(_){}longFn()},1000)});
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){el.addEventListener(n,clr)});
+  el.addEventListener('click',function(){if(fired){fired=false;return}shortFn()});
+  el.addEventListener('contextmenu',function(e){e.preventDefault()});
+}
+function dockBase(){
+  if(!S||!S.order.length)return -1;
+  var o=S.order;
+  if(selId!=null&&o.indexOf(selId)>=0)return o.indexOf(selId);
+  if(cur!=null&&o.indexOf(cur)>=0)return o.indexOf(cur);
+  return -1;
+}
+/* ‹ › 꾹 누르기: 지금 묶음(구분선 사이)의 맨앞/맨뒤 */
+function dockGroupEdge(d){
+  var p=dockBase(),o=S&&S.order;if(!o||!o.length)return;
+  if(p<0){dockGo(d>0?o[o.length-1]:o[0],true);return}
+  var dv=dvList(),t;
+  if(d>0){t=o.length-1;dv.forEach(function(k){if(k-1>=p&&k-1<t)t=k-1})}
+  else{t=0;dv.forEach(function(k){if(k<=p&&k>t)t=k})}
+  dockGo(o[t],true);
+}
+holdBind($('#dkprev'),function(){listNav(-1)},function(){dockGroupEdge(-1)});
+holdBind($('#dknext'),function(){listNav(1)},function(){dockGroupEdge(1)});
 /* 이어폰 두 번 터치=다음, 세 번 터치=이전 (폰이 보내는 미디어 키 신호) */
 try{
   if(navigator.mediaSession){
@@ -1673,7 +1724,6 @@ try{
     navigator.mediaSession.setActionHandler('previoustrack',function(){if(S&&S.order.length)listNav(-1)});
   }
 }catch(_){}
-$('#dknext').addEventListener('click',function(){listNav(1)});
 /* 맨앞/맨뒤: 짧게=구분선에서 막힘(막힌 상태에서 한 번 더 누르면 구분선 바로 뒤/앞, 또 누르면 그 묶음 끝), 1초 꾹=전체 맨앞/맨뒤 */
 function dockEdge(front,full){
   if(!S||!S.order.length)return;
@@ -1688,8 +1738,8 @@ function dockEdge(front,full){
     if(dv.indexOf(p+1)>=0)t=p+1;
     else{t=n-1;dv.forEach(function(k){if(k-1>p&&k-1<t)t=k-1})}
   }
-  if(t===p&&!full){toast('이미 맨 '+(front?'앞':'뒤')+'이에요');return}
-  dockGo(o[t]);
+  if(t===p&&!full){var pl2=false;try{pl2=!!ready&&player.getPlayerState()===1}catch(_){}if(pl2)dockGo(o[p]);return}
+  dockGo(o[t],!!full);
 }
 (function(){
   [['#dkfirst',true],['#dklast',false]].forEach(function(a){
@@ -2021,7 +2071,7 @@ function nCtl(kind){
   else S.n=0;
   commit();
 }
-function smVal(){var n=S.order.length;return Math.max(1,Math.min(n,S.sm>0?S.sm:(S.sc||rEnd())))}
+function smVal(){var n=S.order.length;return Math.max(1,Math.min(n,S.sm>0?S.sm:(S.sc||10)))}
 function smCtl(d){
   var n=S.order.length,v=smVal()+d;if(v<1||v>n)return;
   if(S.sm>0)S.sm=v;S.sc=v;commit();
@@ -2050,13 +2100,37 @@ function sSet(){
 });
 $('#sminus').addEventListener('click',function(){smCtl(-1)});
 $('#splus').addEventListener('click',function(){smCtl(1)});
-$('#smode').addEventListener('click',function(){
-  if(S.sm>0){S.sm=0;stopMode(true);commit();toast('소거 모드를 껐어요');return}
+function smStart(auto){
   if(S.order.length<2){toast('구간이 2개 이상 있어야 해요');return}
-  var v=smVal();S.sm=v;S.sc=v;stopMode(true);commit();
+  var v=smVal();sgAuto=!!auto;sgRemoved=[];S.sm=v;S.sc=v;stopMode(true);commit();
   if(ready&&dur)startRange(true);
-  toast('소거 모드를 켰어요. 앞 '+v+'개를 반복해요');
+  toast((auto?'연속 소거를 켰어요. ':'소거 모드를 켰어요. ')+'앞 '+v+'개를 반복해요');
+}
+$('#smode').addEventListener('click',function(){
+  if(S.sm>0){S.sm=0;sgAuto=false;sgRemoved=[];stopMode(true);commit();toast('소거 모드를 껐어요');return}
+  smStart(false);
 });
+/* 소거 개수 칸: 짧게=5·10·15·20 순환, 1초 꾹=직접 입력 */
+(function(){
+  var el=$('#sval'),tm=null,fired=false;
+  el.readOnly=true;
+  function clr(){if(tm){clearTimeout(tm);tm=null}}
+  el.addEventListener('pointerdown',function(){
+    if(!el.readOnly)return;fired=false;clr();
+    tm=setTimeout(function(){tm=null;fired=true;try{navigator.vibrate&&navigator.vibrate(20)}catch(_){}el.readOnly=false;el.focus();el.select()},1000);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){el.addEventListener(n,clr)});
+  el.addEventListener('click',function(){
+    if(!el.readOnly)return;
+    if(fired){fired=false;return}
+    var n=S.order.length,cur0=smVal(),seq=[5,10,15,20],nx=5;
+    for(var i=0;i<seq.length;i++){if(seq[i]>cur0){nx=seq[i];break}}
+    nx=Math.max(1,Math.min(n,nx));
+    if(S.sm>0)S.sm=nx;S.sc=nx;commit();renderStatusBits();el.value=smVal();
+  });
+  el.addEventListener('blur',function(){el.readOnly=true});
+  el.addEventListener('contextmenu',function(e){e.preventDefault()});
+})();
 $('#nminus').addEventListener('click',function(){nCtl('minus')});
 $('#nplus').addEventListener('click',function(){nCtl('plus')});
 $('#nall').addEventListener('click',function(){nCtl('all')});
@@ -2077,10 +2151,23 @@ listEl.addEventListener('click',function(e){
   var id=Number(li.dataset.id);
   selId=id;selLine=null;render();
 });
-$('#ltools').addEventListener('click',function(e){
-  var b=e.target.closest('[data-lt]');if(!b||b.disabled)return;
-  itemAct(selId,b.dataset.lt);
-});
+(function(){
+  var box=$('#ltools'),tm=null,fired=false;
+  function clr(){if(tm){clearTimeout(tm);tm=null}}
+  box.addEventListener('pointerdown',function(e){
+    var b=e.target.closest('[data-lt]');fired=false;clr();
+    if(!b||b.disabled||selDv!=null)return;
+    var a=b.dataset.lt;if(a!=='up'&&a!=='down')return;
+    tm=setTimeout(function(){tm=null;fired=true;try{navigator.vibrate&&navigator.vibrate(20)}catch(_){}selId=selId;move(selId,a==='up'?'gup':'gdown')},1000);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(n){box.addEventListener(n,clr)});
+  box.addEventListener('contextmenu',function(e){e.preventDefault()});
+  box.addEventListener('click',function(e){
+    if(fired){fired=false;return}
+    var b=e.target.closest('[data-lt]');if(!b||b.disabled)return;
+    itemAct(selId,b.dataset.lt);
+  });
+})();
 /* 2줄 편집 버튼: 맨앞/맨뒤는 1초 꾹 누르면 구분선을 지나쳐 범위 끝으로 */
 (function(){
   var box=$('#tbedit'),tm=null,fired=false;
@@ -2088,8 +2175,10 @@ $('#ltools').addEventListener('click',function(e){
   box.addEventListener('pointerdown',function(e){
     var b=e.target.closest('[data-lt]');fired=false;clr();
     if(!b||b.disabled)return;
-    var a=b.dataset.lt;if(a!=='front'&&a!=='back')return;
-    tm=setTimeout(function(){tm=null;fired=true;try{navigator.vibrate&&navigator.vibrate(20)}catch(_){}move(selId,a,true)},1000);
+    var a=b.dataset.lt;if(a!=='front'&&a!=='back'&&a!=='sogeo')return;
+    tm=setTimeout(function(){tm=null;fired=true;try{navigator.vibrate&&navigator.vibrate(20)}catch(_){}
+      if(a==='sogeo'){if(S.sm>0)moveMid(selId,'mid');else smStart(true)}
+      else move(selId,a,true)},1000);
   });
   ['pointerup','pointercancel','pointerleave'].forEach(function(n){box.addEventListener(n,clr)});
   box.addEventListener('click',function(e){
