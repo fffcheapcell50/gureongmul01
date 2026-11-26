@@ -125,6 +125,14 @@ input.numin{width:64px;text-align:center;font-weight:700;padding:5px 4px;border:
 .row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .field{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .status{margin-top:10px;font-size:14px;min-height:22px}
+.cardrow1{margin-top:2px;flex-wrap:nowrap;gap:6px}
+.cardrow1 .field{flex-wrap:nowrap;white-space:nowrap;gap:4px;font-size:13px}
+.cardrow1 input.numin{width:42px}
+.cardrow1 .btn.sm{padding-left:9px;padding-right:9px;white-space:nowrap}
+.cardrow1 #smode{margin-left:auto}
+.cardrow2{margin-top:10px;flex-wrap:nowrap;gap:6px}
+.cardrow2 .btn{padding-left:12px;padding-right:12px;white-space:nowrap}
+.cardrow2 .status{margin:0;min-height:0;min-width:0;flex:1 1 auto;font-size:11.5px;line-height:1.25;overflow:hidden}
 .adj{display:flex;flex-direction:column;gap:4px;margin:4px 0 2px}
 .adjrow{display:flex;align-items:center;gap:4px;flex-wrap:nowrap}
 .adjrow .lbl{flex:0 0 auto;width:26px;font-size:13px;white-space:nowrap}
@@ -352,9 +360,9 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 
     <div class="stack">
       <section class="card" data-fold="loop">
-        <button class="fold" type="button" aria-expanded="true"><i class="chev"></i><span>반복 범위 <span class="qm" data-tip="커스텀 순번 1번부터 범위 끝까지 차례로 돌고 다시 처음으로 돌아갑니다. 외운 구간은 맨뒤로 보내고 범위를 줄이면 빠집니다. 숨긴 구간은 건너뜁니다.">?</span></span></button>
+        <button class="fold" type="button" aria-expanded="true"><i class="chev"></i><span>반복 범위 <span class="qm" data-tip="범위 반복: 커스텀 순번 1번부터 범위 끝까지 차례로 돌고 다시 처음으로 돌아갑니다. 숨긴 구간은 건너뜁니다.&#10;&#10;×번: 구간 하나를 몇 번 반복하고 다음으로 넘어갈지 정합니다.&#10;&#10;소거: 맨 앞에서 정한 개수만 반복합니다. 2줄의 소거 버튼으로 외운 구간을 하나씩 빼면 범위가 줄고, 마지막 하나까지 빼면 끝납니다. 소거 시작이나 2줄 소거 버튼을 꾹 누르면 연속 소거로 켜지고, 소거 중 소거 버튼을 꾹 누르면 제외입니다.&#10;&#10;범위 반복 시작은 선택한 구간부터(범위 밖이면 범위의 처음부터), 처음은 1번부터 반복합니다.">?</span></span></button>
         <div class="fbody">
-        <div class="row2">
+        <div class="row2" style="display:none">
           <div class="field" id="nfield" style="display:none"><span id="nlab">앞에서</span>
             <button class="btn sm" id="nminus" type="button">-</button>
             <input type="text" inputmode="numeric" class="mono numin" id="nval" value="전체" aria-label="앞에서 개수">
@@ -362,30 +370,29 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
             개
           </div>
           <button class="btn sm" id="nall" type="button" style="display:none">전체</button>
-          <div class="field">구간당
-            <select id="reps" class="btn sm"><option value="1">1번</option><option value="2">2번</option><option value="3">3번</option><option value="5">5번</option></select>
-          </div>
         </div>
-        <div class="row2" style="margin-top:8px">
-          <div class="field">소거
+        <div class="row2 cardrow1">
+          <div class="field" data-tip="구간당 반복 횟수: 구간 하나를 몇 번 반복하고 다음으로 넘어갈지 정합니다."><span aria-hidden="true">×</span>
+            <select id="reps" aria-label="구간당 반복 횟수" class="btn sm"><option value="1">1번</option><option value="2">2번</option><option value="3">3번</option><option value="5">5번</option></select>
+          </div>
+          <div class="field" data-tip="소거 개수: 맨 앞에서 몇 개를 반복·소거할지 정합니다. 짧게 누르면 5·10·15·20으로 바뀌고 1초 꾹 누르면 직접 입력합니다.">소거
             <button class="btn sm" id="sminus" type="button">-</button>
             <input type="text" inputmode="numeric" class="mono numin" id="sval" value="-" aria-label="소거 개수">
             <button class="btn sm" id="splus" type="button">+</button>
-            개
           </div>
           <button class="btn sm" id="smode" type="button" data-tip="소거 반복: 전체 목록 맨 앞에서 정한 개수만 반복합니다. 켜져 있는 동안 2줄의 소거 버튼을 누르면 그 구간이 범위 바로 뒤로 밀려나며 범위가 1개 줄어듭니다. 연속 소거는 이 버튼이나 2줄 소거 버튼을 1초 꾹 눌러 켭니다. 학습/제외 상태는 바뀌지 않습니다. 1개 남았을 때 한 번 더 누르면 꺼집니다.">소거 시작</button>
         </div>
-        <div class="row2" style="margin-top:10px">
+        <div class="row2 cardrow2">
           <button class="btn primary" id="startloop" type="button" data-tip="선택한 구간이 범위 안에 있으면 거기서부터, 아니면 범위의 처음부터 반복합니다.">범위 반복 시작</button>
           <button class="btn" id="firstloop" type="button" data-tip="선택과 상관없이 범위의 첫 구간(1번)부터 반복합니다. 반복 중에 누르면 1번부터 다시 시작합니다.">처음</button>
           <button class="btn" id="stoploop" type="button">정지</button>
+          <div class="status" id="status"></div>
         </div>
-        <div class="status" id="status"></div>
       </div>
       </section>
 
       <section class="card" data-fold="list">
-        <button class="fold" type="button" aria-expanded="true"><i class="chev"></i><span>구간 목록 <span class="mono" id="count"></span><span class="qm" data-tip="항목을 눌러 선택하고, 원래순에서는 번호가 원래 번호, 커스텀순에서는 재생 순서입니다. 커스텀순에서 항목을 꾹 눌러 끌면 순서가 바뀝니다. 색 동그라미로 색 필터를 여러 개 켤 수 있고, 아무것도 켜지 않으면 전체가 나옵니다.&#10;&#10;[이동 버튼]&#10;맨앞/맨뒤: 먼저 자기 범위(안 또는 밖) 안에서 끝으로 가고, 이미 거기면 한 번 더 눌러 반대 범위의 같은 쪽 끝으로 갑니다. 이때 범위 개수도 같이 바뀝니다.&#10;소거: 꺼져 있으면 짧게 눌러 소거를, 1초 꾹 눌러 연속 소거를 켭니다. 소거 중에는 짧게 누르면 소거하고, 꾹 누르면 제외합니다(범위에서 빼서 제외 구간의 맨 위로).&#10;&#10;[목록 위치]&#10;‹ › ⏮ ⏭로 선택을 옮기거나 재생이 넘어갈 때만 목록이 따라갑니다. 맨앞·맨뒤·소거로 편집할 때는 보던 자리에 그대로 있습니다.">?</span><span class="qm" data-tip="[키보드] 구간 목록을 누른 상태에서&#10;짧게 / 1초 꾹 누르기&#10;a 이전 구간 / 묶음 맨앞&#10;d 다음 구간 / 묶음 맨뒤&#10;w 자동 재생 / 반복 재생&#10;s 지금 구간 처음부터 / 구분선&#10;← 구간 한 칸 앞 / 묶음 맨앞&#10;→ 구간 한 칸 뒤 / 묶음 맨뒤&#10;↑ 소거 켜기·끄기 / 연속 소거&#10;↓ 소거 / 제외 (꺼져 있으면 소거 켜기)&#10;q 실행취소 / e 다시실행&#10;Space 재생·정지">?</span></span></button>
+        <button class="fold" type="button" aria-expanded="true"><i class="chev"></i><span>구간 목록 <span class="mono" id="count"></span><span class="qm" data-tip="항목을 눌러 선택하고, 원래순에서는 번호가 원래 번호, 커스텀순에서는 재생 순서입니다. 커스텀순에서 항목을 꾹 눌러 끌면 순서가 바뀝니다. 색 동그라미로 색 필터를 여러 개 켤 수 있고, 아무것도 켜지 않으면 전체가 나옵니다.&#10;&#10;[이동 버튼]&#10;맨앞/맨뒤: 먼저 자기 범위(안 또는 밖) 안에서 끝으로 가고, 이미 거기면 한 번 더 눌러 반대 범위의 같은 쪽 끝으로 갑니다. 이때 범위 개수도 같이 바뀝니다. 구분선이 있으면 구분선에서 한 번씩 멈추고, 1초 꾹 누르면 구분선을 지나 범위 끝으로 갑니다.&#10;↑ ↓: 한 칸씩 옮기고, 1초 꾹 누르면 묶음 안의 맨앞·맨뒤로 옮깁니다.&#10;ㅡ: 선택한 구간 아래에 구분선을 만들거나 지웁니다.&#10;소거: 꺼져 있으면 짧게 눌러 소거를, 1초 꾹 눌러 연속 소거를 켭니다. 소거 중에는 짧게 누르면 소거하고, 꾹 누르면 제외합니다(범위에서 빼서 제외 구간의 맨 위로).&#10;&#10;[목록 위치]&#10;‹ › ⏮ ⏭로 선택을 옮기거나 재생이 넘어갈 때만 목록이 따라갑니다. 맨앞·맨뒤·소거로 편집할 때는 보던 자리에 그대로 있습니다.">?</span><span class="qm" data-tip="[키보드] 구간 목록을 누른 상태에서&#10;짧게 / 1초 꾹 누르기&#10;a 이전 구간 / 묶음 맨앞&#10;d 다음 구간 / 묶음 맨뒤&#10;w 자동 재생 켜기·멈춤 / 반복 재생&#10;s 지금 구간 처음부터 / 구분선&#10;← 구간 한 칸 앞 / 묶음 맨앞&#10;→ 구간 한 칸 뒤 / 묶음 맨뒤&#10;↑ 소거 켜기·끄기 / 연속 소거&#10;↓ 소거 / 제외 (꺼져 있으면 소거 켜기)&#10;q 실행취소 / e 다시실행&#10;Space 재생·정지">?</span></span></button>
         <div class="fbody">
         <div class="row2" id="lfilt" style="margin-bottom:6px;gap:6px">
           <button class="btn sm" id="sortbtn" type="button"><span class="sl">정렬: </span>원래순</button>
@@ -454,16 +461,16 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 <div class="tb2" id="tb2">
   <button class="btn tbm" id="tbfold" type="button" data-tip="이 줄을 접거나 펼칩니다" aria-label="접기"></button>
   <div class="tbedit" id="tbedit"></div>
-  <button class="btn tbm" id="tbscroll" type="button" data-tip="구간 목록을 맨위로 / 맨밑으로. 맨위에 있을 때는 맨밑으로, 그 밖에는 맨위로 갑니다." aria-label="목록 맨위/맨밑"></button>
+  <button class="btn tbm" id="tbscroll" type="button" data-tip="구간 목록을 맨위로 / 맨밑으로. 맨위에 있을 때는 맨밑으로, 그 밖에는 맨위로 갑니다. 1초 꾹 누르면 닫아 둔 작은 영상 창이 다시 나옵니다." aria-label="목록 맨위/맨밑"></button>
   <button class="btn tbm" id="tblock" type="button" data-tip="화면 고정. 1초 꾹 눌러 켜고 끕니다. 켜면 화면 전체 스크롤이 막히고 구간 목록 안의 스크롤만 됩니다." aria-label="화면 고정"><span class="lk"></span></button>
 </div>
 <div class="dock" id="dock">
-  <button class="btn round" id="dkfirst" type="button" data-tip="커스텀 1번 구간으로 (재생 중이면 바로 재생)" aria-label="맨앞 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v14"/><path d="M19 5l-9 7 9 7z" fill="currentColor"/></svg></button>
-  <button class="btn round" id="dkprev" type="button" data-tip="이전 구간 (키보드 a)" aria-label="이전 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+  <button class="btn round" id="dkfirst" type="button" data-tip="맨앞. 짧게 누르면 구분선에서 한 단계씩 멈추며 앞으로 갑니다(묶음 맨앞에서 막힘 → 한 번 더 누르면 앞 묶음의 끝 → 또 누르면 그 묶음의 맨앞). 1초 꾹 누르면 구분선을 무시하고 전체 맨앞으로 가서 재생합니다. 정지 중에는 짧게 누르면 선택만 옮깁니다." aria-label="맨앞 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v14"/><path d="M19 5l-9 7 9 7z" fill="currentColor"/></svg></button>
+  <button class="btn round" id="dkprev" type="button" data-tip="이전 구간 (키보드 a). 1초 꾹 누르면 지금 묶음(구분선·범위 경계 사이)의 맨앞으로 가서 재생합니다. 정지 중에는 짧게 누르면 선택만 옮깁니다." aria-label="이전 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
   <button class="btn round" id="dkplay" type="button" data-tip="재생 / 멈춤. 선택한 구간을 한 번 듣습니다." aria-label="재생"></button>
   <button class="btn round" id="dkloop" type="button" data-tip="범위 반복 시작. 반복 중에 한 번 더 누르면 선택한 구간 하나만 반복하고, 또 누르면 다시 범위 반복입니다. 멈추려면 멈춤 버튼을 누르세요." aria-label="반복"></button>
-  <button class="btn round" id="dknext" type="button" data-tip="다음 구간 (키보드 d)" aria-label="다음 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
-  <button class="btn round" id="dklast" type="button" data-tip="마지막 구간으로 (재생 중이면 바로 재생)" aria-label="맨뒤 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 5v14"/><path d="M5 5l9 7-9 7z" fill="currentColor"/></svg></button>
+  <button class="btn round" id="dknext" type="button" data-tip="다음 구간 (키보드 d). 1초 꾹 누르면 지금 묶음(구분선·범위 경계 사이)의 맨뒤로 가서 재생합니다. 정지 중에는 짧게 누르면 선택만 옮깁니다." aria-label="다음 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+  <button class="btn round" id="dklast" type="button" data-tip="맨뒤. 짧게 누르면 구분선에서 한 단계씩 멈추며 뒤로 갑니다(묶음 맨뒤에서 막힘 → 한 번 더 누르면 다음 묶음의 시작 → 또 누르면 그 묶음의 맨뒤). 1초 꾹 누르면 구분선을 무시하고 전체 맨뒤로 가서 재생합니다. 정지 중에는 짧게 누르면 선택만 옮깁니다." aria-label="맨뒤 구간"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 5v14"/><path d="M5 5l9 7-9 7z" fill="currentColor"/></svg></button>
 </div>
 <div class="undofix"><button class="btn round" id="hundo" type="button" data-tip="실행취소 (Ctrl+Z)" aria-label="실행취소">↶</button><button class="btn round" id="hredo" type="button" data-tip="다시실행 (Ctrl+Y)" aria-label="다시실행">↷</button></div>
 <div class="helpov" id="helpov" hidden>
@@ -472,13 +479,14 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
     <ol>
       <li><b>영상 불러오기</b> 링크를 붙여 넣거나 내 파일을 고릅니다.</li>
       <li><b>문장마다 자르기</b> 영상을 재생하다가 문장이 끝나면 "컷"을 누릅니다. 목록에 구간이 쌓입니다.</li>
-      <li><b>반복해서 듣기</b> 맨 아래 ▶로 구간을 차례로 재생합니다. 🔁는 선택한 구간 하나를 반복하고, 한 번 더 누르면 전체 반복입니다. ‹ ›는 이전·다음 구간입니다.</li>
+      <li><b>반복해서 듣기</b> 맨 아래 ▶는 선택한 구간을 한 번 듣고, 🔁는 범위 반복을 시작합니다. 반복 중에 🔁를 누르면 선택한 구간 하나만 반복하고, 한 번 더 누르면 다시 범위 반복입니다. ‹ ›는 이전·다음 구간입니다. 구간당 몇 번 반복할지는 반복 범위 카드의 ×번에서 정합니다.</li>
       <li><b>외운 건 빼기</b> 외운 구간은 소거 버튼으로 하나씩 빼면 반복 범위에서 빠집니다. 남은 것만 계속 연습합니다.</li>
     </ol>
     <details><summary>맨앞·맨뒤와 구분선</summary><p>‹ ›는 꾹 누르면 지금 묶음의 맨앞·맨뒤로 가고, 구간 목록의 ↑ ↓는 꾹 누르면 묶음 안에서 맨앞·맨뒤로 옮깁니다. 정지 중에는 짧게 누르면 선택만 옮기고, 꾹 누르면 이동해서 재생합니다. 구간 행의 ㅡ 버튼으로 구분선을 만들고 지웁니다. ⏮ ⏭와 2줄의 맨앞·맨뒤는 짧게 누르면 구분선에서 한 단계씩 멈춥니다. 맨뒤에서 막히고, 다시 누르면 구분선 바로 뒤, 또 누르면 그 묶음의 맨뒤입니다. 1초 꾹 누르면 구분선을 무시하고 전체의 맨앞·맨뒤로 갑니다.</p></details>
-    <details><summary>소거</summary><p>2줄의 소거 버튼으로 켭니다. 짧게 누르면 일반 소거, 1초 꾹 누르면 연속 소거입니다(테두리가 두꺼워짐). 소거 개수 칸은 짧게 누르면 5·10·15·20으로 바뀌고 꾹 누르면 직접 입력합니다. 소거 중에 소거 버튼을 짧게 누르면 선택한 구간이 빠지고, 꾹 누르면 제외입니다. 마지막 하나까지 빼면 소거가 끝나고, 연속 소거는 빠진 구간을 맨 뒤로 보내 다음 묶음으로 바로 이어집니다. 끄려면 반복 범위 카드의 "소거 중 (끄기)"를 누릅니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다.</p></details>
+    <details><summary>소거</summary><p>2줄의 소거 버튼이나 반복 범위 카드의 "소거 시작"으로 켭니다. 짧게 누르면 일반 소거, 1초 꾹 누르면 연속 소거입니다(테두리가 두꺼워짐). 소거 개수 칸은 짧게 누르면 5·10·15·20으로 바뀌고 꾹 누르면 직접 입력합니다. 소거 중에 소거 버튼을 짧게 누르면 선택한 구간이 빠지고, 꾹 누르면 제외입니다. 마지막 하나까지 빼면 소거가 끝나고, 연속 소거는 빠진 구간을 맨 뒤로 보내 다음 묶음으로 바로 이어집니다. 끄려면 반복 범위 카드의 "소거 중 (끄기)"를 누릅니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다.</p></details>
     <details><summary>화면 고정 🔒 · ⤒/⤓</summary><p>🔒를 1초 꾹 누르면 화면이 고정되고 구간 목록 안에서만 스크롤됩니다. 다시 1초 꾹 누르면 풀립니다. ⤒/⤓는 목록을 맨위·맨밑으로 보냅니다. 1초 꾹 누르면 닫아 둔 작은 영상 창이 다시 나옵니다.</p></details>
-    <details><summary>키보드</summary><p>구간 목록을 누른 상태에서 씁니다. 키마다 짧게 누르기와 1초 꾹 누르기가 있고 버튼과 같은 동작입니다. A·D 이전·다음 구간(꾹: 묶음 맨앞·맨뒤), W 자동 재생(꾹: 반복 재생), S 지금 구간 처음부터(꾹: 구분선), ← → 구간 이동(꾹: 묶음 맨앞·맨뒤), ↑ 소거 켜기·끄기(꾹: 연속 소거), ↓ 소거(꾹: 제외), Q·E 실행취소·다시실행, Space 재생·정지.</p></details>
+    <details><summary>키보드</summary><p>구간 목록을 누른 상태에서 씁니다. 키마다 짧게 누르기와 1초 꾹 누르기가 있고 버튼과 같은 동작입니다. A·D 이전·다음 구간(꾹: 묶음 맨앞·맨뒤), W 자동 재생 켜기·멈춤(꾹: 반복 재생), S 지금 구간 처음부터(꾹: 구분선), ← → 구간 이동(꾹: 묶음 맨앞·맨뒤), ↑ 소거 켜기·끄기(꾹: 연속 소거), ↓ 소거(꾹: 제외), Q·E 실행취소·다시실행, Space 재생·정지.</p></details>
+    <details><summary>설명 말풍선</summary><p>버튼이나 ? 표시를 1초 가까이 꾹 누르면 설명 말풍선이 뜹니다. 손을 떼도 남아 있고, 다른 곳을 누르면 닫힙니다. PC에서는 마우스를 올려도 뜹니다.</p></details>
     <details><summary>이어폰</summary><p>한 번 터치는 재생·정지, 두 번은 다음 구간, 세 번은 이전 구간입니다. 이어폰으로 멈추면 앱의 정지와 같고, 다시 시작하면 멈춘 자리에서 이어집니다. (유튜브 영상에서는 기기에 따라 두 번·세 번 터치가 안 될 수 있습니다.)</p></details>
     <details><summary>백업·동기화</summary><p>백업 줄에서 파일로 내려받거나 불러옵니다. 동기화를 켜면 폰과 컴퓨터가 같은 편집을 공유합니다. UI 조절의 "다른 기기로 복사"로 화면 모양도 옮길 수 있습니다.</p></details>
     <div class="row2" style="margin-top:12px;justify-content:flex-end"><button class="btn sm primary" id="helpclose" type="button">닫기</button></div>
@@ -1465,7 +1473,7 @@ var TB=[['front','맨앞'],['sogeo','소거'],['back','맨뒤']];
 function renderLtools(){
   var el=$('#ltools');if(!el)return;
   var ok=S.order.indexOf(selId)>=0,c=ok?(S.secs[ix(selId)].c||0):0;
-  var tips={div:'구분선: 선택한 구간 바로 아래에 구분선을 만듭니다. 구분선을 눌러 선택한 뒤 다시 누르면 지우고, ↑ ↓로 한 칸씩 옮깁니다. 소거 중에는 첫 구분선 위까지만 재생합니다.',sogeo:'소거: 선택한 구간을 반복 범위 바로 뒤로 밀어내고 소거 범위를 1개 줄입니다 (범위 밖 구간에서 누르면 다시 넣습니다). 학습/제외 상태는 바뀌지 않습니다.',play:mode==='range'?'여기서부터 이어서 반복 (범위 끝까지 간 뒤 처음으로)':'선택한 구간을 한 번 듣기',single:'선택한 구간만 계속 반복',color:'색 바꾸기 (없음→빨강→노랑→초록)',front:'소속 그룹(학습/제외) 안에서 맨 앞으로',mid:'학습↔제외 그룹 이동 (학습은 제외의 맨 위로, 제외는 학습의 맨 아래로)',back:'소속 그룹(학습/제외) 안에서 맨 뒤로',up:'그룹 안에서 한 칸 앞으로',down:'그룹 안에서 한 칸 뒤로',upto:'커스텀 1번부터 선택한 구간까지 반복',hide:'숨기기(번호에서 제외)'};
+  var tips={div:'구분선: 선택한 구간 바로 아래에 구분선을 만듭니다. 구분선을 눌러 선택한 뒤 다시 누르면 지우고, ↑ ↓로 한 칸씩 옮깁니다. 소거 중에는 첫 구분선 위까지만 재생합니다.',sogeo:'소거: 선택한 구간을 반복 범위 바로 뒤로 밀어내고 소거 범위를 1개 줄입니다 (범위 밖 구간에서 누르면 다시 넣습니다). 학습/제외 상태는 바뀌지 않습니다.',play:mode==='range'?'여기서부터 이어서 반복 (범위 끝까지 간 뒤 처음으로)':'선택한 구간을 한 번 듣기',single:'선택한 구간만 계속 반복',color:'색 바꾸기 (없음→빨강→노랑→초록)',front:'소속 그룹(학습/제외) 안에서 맨 앞으로',mid:'학습↔제외 그룹 이동 (학습은 제외의 맨 위로, 제외는 학습의 맨 아래로)',back:'소속 그룹(학습/제외) 안에서 맨 뒤로',up:'그룹 안에서 한 칸 앞으로. 1초 꾹 누르면 구분선·범위 경계 안에서 맨 앞으로',down:'그룹 안에서 한 칸 뒤로. 1초 꾹 누르면 구분선·범위 경계 안에서 맨 뒤로',upto:'커스텀 1번부터 선택한 구간까지 반복',hide:'숨기기(번호에서 제외)'};
   var lt=LT.slice(),dvSel=selDv!=null;
   if(el.children.length!==lt.length){
     el.innerHTML=lt.map(function(t){return '<button type="button" class="btn sm" data-lt="'+t[0]+'"></button>'}).join('');
@@ -1485,7 +1493,7 @@ function renderTb(){
     el.dataset.k=key;
     el.innerHTML=tb.map(function(t){return '<button type="button" class="btn tbb" data-lt="'+t[0]+'">'+t[1]+'</button>'}).join('');
   }
-  var tips={front:'맨앞: 먼저 구분선 아래나 자기 범위의 맨 앞으로 갑니다. 이미 거기면 한 번 더 눌러 반대 범위로 갑니다. 1초 꾹 누르면 구분선을 지나쳐 바로 범위의 맨 앞으로 갑니다.',back:'맨뒤: 먼저 구분선 위나 자기 범위의 맨 뒤로 갑니다. 이미 거기면 한 번 더 눌러 반대 범위로 갑니다. 1초 꾹 누르면 구분선을 지나쳐 바로 범위의 맨 뒤로 갑니다.',sogeo:'소거: 선택한 구간을 반복 범위 바로 뒤로 밀어내고 소거 범위를 1개 줄입니다.'};
+  var tips={front:'맨앞(선택한 구간 이동): 먼저 지금 묶음의 맨앞으로 가서 구분선에 막힙니다. 한 번 더 누르면 앞 묶음의 맨뒤로 넘어가고, 또 누르면 그 묶음의 맨앞으로 갑니다. 범위(학습/제외) 끝에서는 반대 범위로 넘어갑니다. 1초 꾹 누르면 구분선을 무시하고 범위의 맨 앞으로 갑니다.',back:'맨뒤(선택한 구간 이동): 먼저 지금 묶음의 맨뒤로 가서 구분선에 막힙니다. 한 번 더 누르면 다음 묶음의 맨앞으로 넘어가고, 또 누르면 그 묶음의 맨뒤로 갑니다. 범위(학습/제외) 끝에서는 반대 범위로 넘어갑니다. 1초 꾹 누르면 구분선을 무시하고 범위의 맨 뒤로 갑니다.',sogeo:'소거: 선택한 구간을 반복 범위 바로 뒤로 밀어내고 소거 범위를 1개 줄입니다.'};
   tips.sogeo='소거: 꺼져 있으면 짧게 눌러 소거를 켜고, 1초 꾹 누르면 연속 소거로 켭니다. 소거 중에는 짧게 누르면 선택한 구간을 소거하고, 1초 꾹 누르면 제외합니다(범위에서 빼서 제외 구간으로).';
   Array.prototype.forEach.call(el.children,function(b){b.disabled=(b.dataset.lt==='sogeo'&&!(S.sm>0))?selDv!=null:!ok;b.dataset.tip=tips[b.dataset.lt]||'';if(b.dataset.lt==='sogeo')b.classList.toggle('sgauto',sgAuto&&S.sm>0)});
 }
@@ -2417,7 +2425,9 @@ function keyAct(c,long){
   else if(c==='KeyD'){long?dockGroupEdge(1):listNav(1)}
   else if(c==='KeyW'){
     if(!ready||!dur)return;
-    if(long){if(okSel)startSingle(selId)}else startRange(false);
+    if(long){if(okSel)startSingle(selId)}
+    else if(mode==='range'||mode==='single'){stopMode();try{player.pauseVideo()}catch(_){}setTimeout(dockUi,150)}   /* 자동·반복 재생 중이면 멈춤 */
+    else startRange(false);
   }
   else if(c==='KeyS'){if(long){if(okSel)toggleDiv(selId)}else listRestart()}
   else if(c==='ArrowUp'){smToggle(!!long)}
