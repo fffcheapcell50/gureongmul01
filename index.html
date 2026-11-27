@@ -80,7 +80,7 @@ button,.btn,.dock,.tb2,#ltools,#sval[readonly]{-webkit-user-select:none;user-sel
 .player-wrap.flip #player,.player-wrap.flip #lv{transform:scaleX(-1)}
 .pipov,.pipx,.piprz{display:none}
 .blkzone{position:absolute;left:18%;right:18%;top:16%;bottom:28%;z-index:2;cursor:pointer}
-.blkcover{position:absolute;inset:0;z-index:3;background:#000;color:#555;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center}
+.blkcover{position:absolute;inset:0 0 16% 0;z-index:3;background:#000;color:#555;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center}
 .blkcover[hidden]{display:none}
 .player-wrap.pip .blkzone{display:none}
 .player-wrap.pip .blkcover{pointer-events:none}
@@ -402,7 +402,7 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
         <div class="fbody">
         <div class="row2" id="lfilt" style="margin-bottom:6px;gap:6px">
           <button class="btn sm" id="sortbtn" type="button"><span class="sl">정렬: </span>원래순</button>
-          <button class="btn sm" id="revbtn" type="button" data-tip="반전: 제외한(외운) 구간을 목록 위로 올리고, 범위 반복도 제외한 구간만 다시 돌립니다. 헷갈리는 외운 구간을 복습할 때 씁니다. 다시 누르면 원래대로 돌아갑니다.">반전</button>
+          <button class="btn sm" id="revbtn" type="button" data-tip="반전: 소거 중에는 구분선 기준으로 앞뒤 묶음의 자리를 바꿉니다(구분선을 선택하면 그 구분선 양옆, 없으면 첫 구분선. 구분선이 없으면 쓸 수 없음). 소거가 꺼져 있을 때는 제외한(외운) 구간을 목록 위로 올리고, 범위 반복도 제외한 구간만 다시 돌립니다. 헷갈리는 외운 구간을 복습할 때 씁니다. 다시 누르면 원래대로 돌아갑니다.">반전</button>
           <span id="cfbar" class="row2" style="gap:4px"></span>
           <select id="lrows" class="btn sm" data-tip="목록에 한 번에 보이는 줄 수. 나머지는 스크롤합니다."><option value="5">5줄</option><option value="10">10줄</option><option value="15">15줄</option><option value="20">20줄</option><option value="0">전체</option></select>
           <label class="field hint" data-tip="색 필터를 켜면 반복 재생도 그 색 구간만 돕니다. 해제하면 목록만 걸러지고, 반복은 원래 반복 범위 전체를 돕니다."><input type="checkbox" id="cfloop"> 반복에도 적용</label>
@@ -489,7 +489,7 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
       <li><b>외운 건 빼기</b> 외운 구간은 소거 버튼으로 하나씩 빼면 반복 범위에서 빠집니다. 남은 것만 계속 연습합니다.</li>
     </ol>
     <details><summary>맨앞·맨뒤와 구분선</summary><p>‹ ›는 꾹 누르면 지금 묶음의 맨앞·맨뒤로 가고, 구간 목록의 ↑ ↓는 꾹 누르면 묶음 안에서 맨앞·맨뒤로 옮깁니다. 정지 중에는 짧게 누르면 선택만 옮기고, 꾹 누르면 이동해서 재생합니다. 구간 행의 ㅡ 버튼으로 구분선을 만들고 지웁니다. ⏮ ⏭와 2줄의 맨앞·맨뒤는 짧게 누르면 구분선에서 한 단계씩 멈춥니다. 맨뒤에서 막히고, 다시 누르면 구분선 바로 뒤, 또 누르면 그 묶음의 맨뒤입니다. 1초 꾹 누르면 구분선을 무시하고 전체의 맨앞·맨뒤로 갑니다.</p></details>
-    <details><summary>소거</summary><p>2줄의 소거 버튼이나 반복 범위 카드의 "소거 시작"으로 켭니다. 짧게 누르면 일반 소거, 1초 꾹 누르면 연속 소거입니다(테두리가 두꺼워짐). 소거 개수 칸은 짧게 누르면 5·10·15·20으로 바뀌고 꾹 누르면 직접 입력합니다. 소거 중에 소거 버튼을 짧게 누르면 선택한 구간이 빠지고, 꾹 누르면 제외입니다. 마지막 하나까지 빼면 소거가 끝나고, 연속 소거는 빠진 구간을 맨 뒤로 보내 다음 묶음으로 바로 이어집니다. 끄려면 반복 범위 카드의 "소거 중 (끄기)"를 누릅니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다.</p></details>
+    <details><summary>소거</summary><p>2줄의 소거 버튼이나 반복 범위 카드의 "소거 시작"으로 켭니다. 짧게 누르면 일반 소거, 1초 꾹 누르면 연속 소거입니다(테두리가 두꺼워짐). 소거 개수 칸은 짧게 누르면 5·10·15·20으로 바뀌고 꾹 누르면 직접 입력합니다. 소거 중에 소거 버튼을 짧게 누르면 선택한 구간이 빠지고, 꾹 누르면 제외입니다. 마지막 하나까지 빼면 소거가 끝나고, 연속 소거는 빠진 구간을 맨 뒤로 보내 다음 묶음으로 바로 이어집니다. 끄려면 반복 범위 카드의 "소거 중 (끄기)"를 누릅니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다. 소거 중에 반전을 누르면 구분선 기준으로 앞뒤 묶음의 자리가 바뀝니다(구분선을 선택해 두면 그 양옆). 제외·일반으로 가려면 소거를 끝낸 뒤 반전을 누릅니다.</p></details>
     <details><summary>화면 고정 🔒 · ⤒/⤓</summary><p>🔒를 1초 꾹 누르면 화면이 고정되고 구간 목록 안에서만 스크롤됩니다. 다시 1초 꾹 누르면 풀립니다. ⤒/⤓는 목록을 맨위·맨밑으로 보냅니다. 1초 꾹 누르면 닫아 둔 작은 영상 창이 다시 나옵니다.</p></details>
     <details><summary>키보드</summary><p>구간 목록을 누른 상태에서 씁니다. 키마다 짧게 누르기와 1초 꾹 누르기가 있고 버튼과 같은 동작입니다. A·D 이전·다음 구간(꾹: 묶음 맨앞·맨뒤), W 자동 재생 켜기·멈춤(꾹: 반복 재생), S 지금 구간 처음부터(꾹: 구분선), ← → 구간 이동(꾹: 묶음 맨앞·맨뒤), ↑ 소거 켜기·끄기(꾹: 연속 소거), ↓ 소거(꾹: 제외), Q·E 실행취소·다시실행, Space 재생·정지.</p></details>
     <details><summary>화면 숨기기</summary><p>영상 가운데를 누르면 화면이 검게 가려지고 소리는 계속 납니다. 다시 누르면 돌아옵니다. 작은 창은 아무 곳이나 짧게 누르면 전환됩니다. 정지·재생은 재생바 버튼으로 합니다.</p></details>
@@ -1836,7 +1836,25 @@ $('#cfbar').addEventListener('click',function(e){
   if(i>=0)prefs.cfs.splice(i,1);else prefs.cfs.push(c);
   savePrefs();render();
 });
-$('#revbtn').addEventListener('click',function(){stopMode(true);prefs.rev=!prefs.rev;savePrefs();render()});
+$('#revbtn').addEventListener('click',function(){
+  if(S.sm>0){
+    /* 소거 중: 구분선 기준으로 묶음 두 개의 자리를 서로 바꾼다 (선택한 구분선, 없으면 첫 구분선) */
+    var dv=dvList(),n=S.order.length;
+    if(!dv.length){toast('구분선이 필요합니다. 구간 목록의 ㅡ 버튼으로 먼저 구분선을 만드세요');return}
+    var j=(selDv!=null&&dv.indexOf(selDv)>=0)?dv.indexOf(selDv):0;
+    var bd=[0].concat(dv,[n]),blocks=[];
+    for(var i=0;i<bd.length-1;i++)blocks.push(S.order.slice(bd[i],bd[i+1]));
+    var tmp=blocks[j];blocks[j]=blocks[j+1];blocks[j+1]=tmp;
+    var no=[],nd=[],acc=0;
+    blocks.forEach(function(b,bi){no=no.concat(b);acc+=b.length;if(bi<blocks.length-1)nd.push(acc)});
+    S.order=no;S.dv=nd;
+    if(selDv!=null&&j<nd.length)selDv=nd[j];
+    if(j===0){var v=Math.min(S.sc||smVal(),blocks[0].length);S.sm=v;S.sc=v;sgRemoved=[];stopMode(true);commit();if(ready&&dur)startRange(true);toast('구분선 기준으로 앞뒤 묶음을 바꿨어요. 소거 '+v+'개로 다시 시작해요')}
+    else{commit();toast('구분선 기준으로 묶음 두 개를 바꿨어요')}
+    return;
+  }
+  stopMode(true);prefs.rev=!prefs.rev;savePrefs();render()
+});
 $('#lrows').addEventListener('change',function(){prefs.lrows=Number(this.value);savePrefs();render()});
 $('#cfloop').addEventListener('change',function(){prefs.cfLoop=this.checked;savePrefs();render()});
 $('#selmode').addEventListener('click',function(){
