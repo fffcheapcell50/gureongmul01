@@ -64,6 +64,7 @@ input.numin{width:64px;text-align:center;font-weight:700;padding:5px 4px;border:
 .btn.mark{background:var(--mark);color:#fff;border-color:var(--mark);font-weight:700;font-size:17px;min-height:52px;flex:1 1 160px}
 .btn.on{background:var(--accent-soft);border-color:var(--accent)}
 .btn.sgauto{border-width:3px;border-color:var(--accent)}
+button,.btn,.dock,.tb2,#ltools,#sval[readonly]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .btn.danger{color:var(--danger)}
 .btn.sm{padding:4px 8px;min-height:var(--btnsm,32px);font-size:13px}
 .grid{display:grid;gap:var(--gap,16px);grid-template-columns:minmax(0,1fr)}
@@ -78,6 +79,11 @@ input.numin{width:64px;text-align:center;font-weight:700;padding:5px 4px;border:
 #lv{background:#000}
 .player-wrap.flip #player,.player-wrap.flip #lv{transform:scaleX(-1)}
 .pipov,.pipx,.piprz{display:none}
+.blkzone{position:absolute;left:18%;right:18%;top:16%;bottom:28%;z-index:2;cursor:pointer}
+.blkcover{position:absolute;inset:0;z-index:3;background:#000;color:#555;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center}
+.blkcover[hidden]{display:none}
+.player-wrap.pip .blkzone{display:none}
+.player-wrap.pip .blkcover{pointer-events:none}
 .player-wrap.pip{position:fixed;z-index:25;max-width:none;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.5)}
 .player-wrap.pip .pipov{display:block;position:absolute;inset:0;z-index:3;touch-action:none;cursor:move}
 .player-wrap.pip .pipx{display:flex;position:absolute;top:4px;right:4px;z-index:4;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:13px;align-items:center;justify-content:center;cursor:pointer;padding:0}
@@ -295,7 +301,7 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 
   <div class="grid">
     <section class="stage card">
-      <div class="pslot" id="pslot"><div class="player-wrap" id="pwrap"><div id="player"></div><video id="lv" controls playsinline style="display:none"></video><div class="pipov" id="pipov"></div><button class="pipx" id="pipx" type="button" aria-label="작은 영상 닫기">✕</button><i class="piprz" id="piprz"></i></div></div>
+      <div class="pslot" id="pslot"><div class="player-wrap" id="pwrap"><div id="player"></div><video id="lv" controls playsinline style="display:none"></video><div class="blkzone" id="blkzone"></div><div class="blkcover" id="blkcover" hidden>화면을 숨겼어요. 누르면 돌아와요</div><div class="pipov" id="pipov"></div><button class="pipx" id="pipx" type="button" aria-label="작은 영상 닫기">✕</button><i class="piprz" id="piprz"></i></div></div>
       <div class="msg" id="msg"></div>
       <div class="clock">
         <span class="big mono" id="now">0:00.0</span>
@@ -486,6 +492,7 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
     <details><summary>소거</summary><p>2줄의 소거 버튼이나 반복 범위 카드의 "소거 시작"으로 켭니다. 짧게 누르면 일반 소거, 1초 꾹 누르면 연속 소거입니다(테두리가 두꺼워짐). 소거 개수 칸은 짧게 누르면 5·10·15·20으로 바뀌고 꾹 누르면 직접 입력합니다. 소거 중에 소거 버튼을 짧게 누르면 선택한 구간이 빠지고, 꾹 누르면 제외입니다. 마지막 하나까지 빼면 소거가 끝나고, 연속 소거는 빠진 구간을 맨 뒤로 보내 다음 묶음으로 바로 이어집니다. 끄려면 반복 범위 카드의 "소거 중 (끄기)"를 누릅니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다.</p></details>
     <details><summary>화면 고정 🔒 · ⤒/⤓</summary><p>🔒를 1초 꾹 누르면 화면이 고정되고 구간 목록 안에서만 스크롤됩니다. 다시 1초 꾹 누르면 풀립니다. ⤒/⤓는 목록을 맨위·맨밑으로 보냅니다. 1초 꾹 누르면 닫아 둔 작은 영상 창이 다시 나옵니다.</p></details>
     <details><summary>키보드</summary><p>구간 목록을 누른 상태에서 씁니다. 키마다 짧게 누르기와 1초 꾹 누르기가 있고 버튼과 같은 동작입니다. A·D 이전·다음 구간(꾹: 묶음 맨앞·맨뒤), W 자동 재생 켜기·멈춤(꾹: 반복 재생), S 지금 구간 처음부터(꾹: 구분선), ← → 구간 이동(꾹: 묶음 맨앞·맨뒤), ↑ 소거 켜기·끄기(꾹: 연속 소거), ↓ 소거(꾹: 제외), Q·E 실행취소·다시실행, Space 재생·정지.</p></details>
+    <details><summary>화면 숨기기</summary><p>영상 가운데를 누르면 화면이 검게 가려지고 소리는 계속 납니다. 다시 누르면 돌아옵니다. 작은 창은 아무 곳이나 짧게 누르면 전환됩니다. 정지·재생은 재생바 버튼으로 합니다.</p></details>
     <details><summary>설명 말풍선</summary><p>버튼이나 ? 표시를 1초 가까이 꾹 누르면 설명 말풍선이 뜹니다. 손을 떼도 남아 있고, 다른 곳을 누르면 닫힙니다. PC에서는 마우스를 올려도 뜹니다.</p></details>
     <details><summary>이어폰</summary><p>한 번 터치는 재생·정지, 두 번은 다음 구간, 세 번은 이전 구간입니다. 이어폰으로 멈추면 앱의 정지와 같고, 다시 시작하면 멈춘 자리에서 이어집니다. (유튜브 영상에서는 두 번·세 번 터치가 안 되고 한 번 터치만 됩니다. 내 파일 영상에서는 될 수 있습니다.)</p></details>
     <details><summary>백업·동기화</summary><p>백업 줄에서 파일로 내려받거나 불러옵니다. 동기화를 켜면 폰과 컴퓨터가 같은 편집을 공유합니다. UI 조절의 "다른 기기로 복사"로 화면 모양도 옮길 수 있습니다.</p></details>
@@ -891,9 +898,11 @@ function onState(e){
       resume={m:m0,id:c0,t:t,rep:rep};stopMode(true);dockUi();
     },250);
   }
-  if(e.data===1&&mode==='idle'&&resume)doResume();
+  if(e.data===1&&mode==='idle'&&resume&&resumeOk())doResume();
 }
 var resume=null;
+/* 이어폰으로 멈춘 뒤 다른 구간을 골랐으면 기억한 자리는 버린다 */
+function resumeOk(){if(resume&&selId!=null&&resume.id!==selId)resume=null;return !!resume}
 function doResume(){
   var r=resume;resume=null;if(!r||ix(r.id)<0)return;
   mode=r.m;cur=r.id;rep=r.rep||0;selId=r.id;
@@ -1722,6 +1731,7 @@ function dockGroupEdge(d){
   var dv=dvList(),t,bd=S.sm>0?Math.min(S.sm,o.length):rEnd(),inR=p<bd,lo=inR?0:bd,hi=inR?bd-1:o.length-1;
   if(d>0){t=hi;dv.forEach(function(k){if(k-1>=p&&k-1<t)t=k-1})}
   else{t=lo;dv.forEach(function(k){if(k<=p&&k>t)t=k})}
+  if(t===p){t=p+d;if(t<0||t>=o.length)return}   /* 이미 묶음 끝이면 경계를 넘는다. 전체 맨앞·맨뒤면 아무 일 없음 */
   dockGo(o[t],true);
 }
 holdBind($('#dkprev'),function(){listNav(-1)},function(){dockGroupEdge(-1)});
@@ -1763,13 +1773,13 @@ function dockEdge(front,full){
 $('#dkplay').addEventListener('click',function(){
   if(!ready)return;
   if(isPlayingNow()){mode==='idle'||stopMode();player.pauseVideo();setTimeout(dockUi,150);return}
-  if(resume){doResume();setTimeout(dockUi,150);return}
+  if(resumeOk()){doResume();setTimeout(dockUi,150);return}
   if(selId!=null&&S.order.indexOf(selId)>=0)itemAct(selId,'play');else player.playVideo();
   setTimeout(dockUi,150);
 });
 $('#dkloop').addEventListener('click',function(){
   if(!ready||!dur)return;
-  if(resume&&mode==='idle'){doResume();return}
+  if(mode==='idle'&&resumeOk()){doResume();return}
   var sel=(selId!=null&&S.order.indexOf(selId)>=0)?selId:null;
   if((mode==='range'||mode==='single')&&cur!=null){
     if(sel==null||sel===cur){
@@ -2399,6 +2409,15 @@ function listNav(d){
     if(pl0)baseId=cur;
   }
   var i=ids.indexOf(baseId),j=i<0?0:Math.max(0,Math.min(ids.length-1,i+d));
+  if(S.sm>0){
+    /* 소거 중에는 소거 범위 안에서 돈다 (마지막에서 다음 = 처음, 처음에서 이전 = 마지막) */
+    var rl=rangeList(),kk=rl.indexOf(baseId);
+    if(kk>=0&&rl.length>1){
+      if(d>0&&kk===rl.length-1)j=ids.indexOf(rl[0]);
+      else if(d<0&&kk===0)j=ids.indexOf(rl[rl.length-1]);
+      if(j<0)j=i<0?0:i;
+    }
+  }
   if(navAnchor&&navAnchor.id===selId){
     var tg=d>0?navAnchor.next:navAnchor.prev;navAnchor=null;
     var tj=tg==null?-1:ids.indexOf(tg);
@@ -2427,6 +2446,7 @@ function keyAct(c,long){
     if(!ready||!dur)return;
     if(long){if(okSel)startSingle(selId)}
     else if(mode==='range'||mode==='single'){stopMode();try{player.pauseVideo()}catch(_){}setTimeout(dockUi,150)}   /* 자동·반복 재생 중이면 멈춤 */
+    else if(mode==='idle'&&resumeOk())doResume();
     else startRange(false);
   }
   else if(c==='KeyS'){if(long){if(okSel)toggleDiv(selId)}else listRestart()}
@@ -3176,6 +3196,9 @@ function pipStartG(){
     pipG={m:'pinch',d0:d,w0:P.w,cx:P.x+P.w/2,cy:P.y+pipH(P.w)/2};
   }else pipG=null;
 }
+function toggleBlk(){var c=$('#blkcover');c.hidden=!c.hidden}
+$('#blkzone').addEventListener('click',function(){$('#blkcover').hidden=false});
+$('#blkcover').addEventListener('click',function(){$('#blkcover').hidden=true});
 var pov=$('#pipov');
 pov.addEventListener('pointerdown',function(e){
   if(!pipOn||e.button>0)return;
@@ -3205,7 +3228,7 @@ function pipEnd(e,cancel){
   var left=Object.keys(pipPtr).length;
   if(left>0){pipStartG();return}
   pipG=null;savePrefs();
-  if(!cancel&&!pipMoved&&performance.now()-pipT0<400)$('#pp').click();
+  if(!cancel&&!pipMoved&&performance.now()-pipT0<400)toggleBlk();
 }
 pov.addEventListener('pointerup',function(e){pipEnd(e,false)});
 pov.addEventListener('pointercancel',function(e){pipEnd(e,true)});
