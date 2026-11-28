@@ -80,7 +80,7 @@ button,.btn,.dock,.tb2,#ltools,#sval[readonly]{-webkit-user-select:none;user-sel
 .player-wrap.flip #player,.player-wrap.flip #lv{transform:scaleX(-1)}
 .pipov,.pipx,.piprz{display:none}
 .blkzone{position:absolute;left:18%;right:18%;top:16%;bottom:28%;z-index:2;cursor:pointer}
-.blkcover{position:absolute;inset:0 0 16% 0;z-index:3;background:#000;color:#555;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center}
+.blkcover{position:absolute;inset:0 0 32% 0;z-index:3;background:#000;color:#555;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center}
 .blkcover[hidden]{display:none}
 .player-wrap.pip .blkzone{display:none}
 .player-wrap.pip .blkcover{pointer-events:none}
@@ -491,7 +491,7 @@ body{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
     <details><summary>맨앞·맨뒤와 구분선</summary><p>‹ ›는 꾹 누르면 지금 묶음의 맨앞·맨뒤로 가고, 구간 목록의 ↑ ↓는 꾹 누르면 묶음 안에서 맨앞·맨뒤로 옮깁니다. 정지 중에는 짧게 누르면 선택만 옮기고, 꾹 누르면 이동해서 재생합니다. 구간 행의 ㅡ 버튼으로 구분선을 만들고 지웁니다. ⏮ ⏭와 2줄의 맨앞·맨뒤는 짧게 누르면 구분선에서 한 단계씩 멈춥니다. 맨뒤에서 막히고, 다시 누르면 구분선 바로 뒤, 또 누르면 그 묶음의 맨뒤입니다. 1초 꾹 누르면 구분선을 무시하고 전체의 맨앞·맨뒤로 갑니다.</p></details>
     <details><summary>소거</summary><p>2줄의 소거 버튼이나 반복 범위 카드의 "소거 시작"으로 켭니다. 짧게 누르면 일반 소거, 1초 꾹 누르면 연속 소거입니다(테두리가 두꺼워짐). 소거 개수 칸은 짧게 누르면 5·10·15·20으로 바뀌고 꾹 누르면 직접 입력합니다. 소거 중에 소거 버튼을 짧게 누르면 선택한 구간이 빠지고, 꾹 누르면 제외입니다. 마지막 하나까지 빼면 소거가 끝나고, 연속 소거는 빠진 구간을 맨 뒤로 보내 다음 묶음으로 바로 이어집니다. 끄려면 반복 범위 카드의 "소거 중 (끄기)"를 누릅니다. 구분선이 있으면 첫 구분선 앞까지만 반복합니다. 소거 중에 반전을 누르면 구분선 기준으로 앞뒤 묶음의 자리가 바뀝니다(구분선을 선택해 두면 그 양옆). 제외·일반으로 가려면 소거를 끝낸 뒤 반전을 누릅니다.</p></details>
     <details><summary>화면 고정 🔒 · ⤒/⤓</summary><p>🔒를 1초 꾹 누르면 화면이 고정되고 구간 목록 안에서만 스크롤됩니다. 다시 1초 꾹 누르면 풀립니다. ⤒/⤓는 목록을 맨위·맨밑으로 보냅니다. 1초 꾹 누르면 닫아 둔 작은 영상 창이 다시 나옵니다.</p></details>
-    <details><summary>키보드</summary><p>구간 목록을 누른 상태에서 씁니다. 키마다 짧게 누르기와 1초 꾹 누르기가 있고 버튼과 같은 동작입니다. A·D 이전·다음 구간(꾹: 묶음 맨앞·맨뒤), W 자동 재생 켜기·멈춤(꾹: 반복 재생), S 지금 구간 처음부터(꾹: 구분선), ← → 구간 이동(꾹: 묶음 맨앞·맨뒤), ↑ 소거 켜기·끄기(꾹: 연속 소거), ↓ 소거(꾹: 제외), Q·E 실행취소·다시실행, Space 재생·정지.</p></details>
+    <details><summary>키보드</summary><p>구간 목록 카드를 누른 상태에서 씁니다(컷 편집 쪽을 누르면 컷 편집 키가 됩니다. 영상 화면을 눌러도 직전 대상이 유지되고, Tab 키로 구간 목록 ↔ 컷 편집을 바꿀 수 있습니다). 키마다 짧게 누르기와 1초 꾹 누르기가 있고 버튼과 같은 동작입니다. A·D 이전·다음 구간(꾹: 묶음 맨앞·맨뒤), W 자동 재생 켜기·멈춤(꾹: 반복 재생), S 지금 구간 처음부터(꾹: 구분선), ← → 구간 이동(꾹: 묶음 맨앞·맨뒤), ↑ 소거 켜기·끄기(꾹: 연속 소거), ↓ 소거(꾹: 제외), Q·E 실행취소·다시실행, Space 재생·정지.</p></details>
     <details><summary>화면 숨기기</summary><p>영상 가운데를 누르면 화면이 검게 가려지고 소리는 계속 납니다. 다시 누르면 돌아옵니다. 작은 창은 아무 곳이나 짧게 누르면 전환됩니다. 정지·재생은 재생바 버튼으로 합니다.</p></details>
     <details><summary>설명 말풍선</summary><p>버튼이나 ? 표시를 1초 가까이 꾹 누르면 설명 말풍선이 뜹니다. 손을 떼도 남아 있고, 다른 곳을 누르면 닫힙니다. PC에서는 마우스를 올려도 뜹니다.</p></details>
     <details><summary>이어폰</summary><p>한 번 터치는 재생·정지, 두 번은 다음 구간, 세 번은 이전 구간입니다. 이어폰으로 멈추면 앱의 정지와 같고, 다시 시작하면 멈춘 자리에서 이어집니다. (유튜브 영상에서는 두 번·세 번 터치가 안 되고 한 번 터치만 됩니다. 내 파일 영상에서는 될 수 있습니다.)</p></details>
@@ -531,6 +531,7 @@ var armReset=false, armBm=null, toastTimer=null;
 var selMode=false, msel=new Set(), selLine=null, pullMode=false;
 var undoSt=[], redoSt=[], lastSnap='';
 var spans=[], V=0, zDet=false, zC=0, zInfo=null, zLastT=0;
+var cvDet=false, cvC=0, cvTotal=0, cvLastC=0, cvTm=null;   /* 커스텀 막대: 휠로 넘겨 본 상태 */
 function customView(){return !!(dur&&S&&prefs.sort==='custom'&&S.order.length)}
 var prefs=LS.get('looper:v1:prefs')||{};
 if(['orig','custom','both'].indexOf(prefs.barNum)<0)prefs.barNum='orig';
@@ -612,7 +613,7 @@ function buildMap(){
   if(customView()){
     var cx=0;
     S.order.forEach(function(id){var a=st(id),b=en(id);spans.push({a:a,b:b,x:cx,id:id});cx+=(b-a)});
-    V=cx||dur;zInfo=null;
+    V=cx||dur;zInfo=null;cvTotal=V;
     /* 확대: 지금 위치를 가운데로 해서 재생 순서 막대의 일부만 크게 보여준다 */
     if(prefs.zoom==='auto'&&spans.length>=3){
       var lens2=spans.map(function(q){return q.b-q.a}).sort(function(a,b){return a-b});
@@ -621,6 +622,8 @@ function buildMap(){
       if(L2<V){
         var tc=curTime(),cid2=(typeof cur!=='undefined'&&cur!=null&&ix(cur)>=0&&tc>=st(cur)-1e-6&&tc<=en(cur)+1e-6)?cur:segAt(tc),xc=0;
         for(var qi=0;qi<spans.length;qi++)if(spans[qi].id===cid2){xc=spans[qi].x+Math.max(0,Math.min(spans[qi].b-spans[qi].a,tc-spans[qi].a));break}
+        if(cvDet)xc=cvC;
+        cvLastC=xc;
         var w0=xc-L2/2;if(w0<0)w0=0;if(w0>V-L2)w0=V-L2;
         var w1=w0+L2,ns2=[];
         spans.forEach(function(q){
@@ -1007,7 +1010,7 @@ setInterval(function(){
 
 function updateClock(t){
   $('#now').textContent=fmt(t);
-  if(prefs.zoom==='auto'&&!zDet&&dur&&!tdrag&&zInfo&&Math.abs(t-zLastT)>=Math.max(0.02,zInfo.L/($('#tl').clientWidth||600)))renderTimeline();
+  if(prefs.zoom==='auto'&&!zDet&&!cvDet&&dur&&!tdrag&&zInfo&&Math.abs(t-zLastT)>=Math.max(0.02,zInfo.L/($('#tl').clientWidth||600)))renderTimeline();
   var h=$('#head');if(h&&dur)h.style.left='calc('+(t2f(t)*100)+'% - 1px)';
   if(!dur)return;
   var now=null;
@@ -1402,7 +1405,7 @@ function renderTimeline(){
   tl.innerHTML=h;
 }
 function zoomUi(){
-  var z=prefs.zoom||'all',det=z==='auto'&&zDet;
+  var z=prefs.zoom||'all',det=z==='auto'&&(zDet||cvDet);
   $('#zoombtn').textContent=det?'현재 위치':'막대: '+({all:'전체',auto:'확대',cuts:'컷 범위',range:'반복 범위'})[z];
   $('#zoombtn').classList.toggle('on',z!=='all');
   $('#zmwrap').hidden=z!=='auto';
@@ -1732,7 +1735,7 @@ function dockGroupEdge(d){
   if(d>0){t=hi;dv.forEach(function(k){if(k-1>=p&&k-1<t)t=k-1})}
   else{t=lo;dv.forEach(function(k){if(k<=p&&k>t)t=k})}
   if(t===p){t=p+d;if(t<0||t>=o.length)return}   /* 이미 묶음 끝이면 경계를 넘는다. 전체 맨앞·맨뒤면 아무 일 없음 */
-  dockGo(o[t],true);
+  dockGo(o[t]);   /* 정지 중이면 이동만, 재생 중이면 직전 재생 방식으로 이어서 */
 }
 holdBind($('#dkprev'),function(){listNav(-1)},function(){dockGroupEdge(-1)});
 holdBind($('#dknext'),function(){listNav(1)},function(){dockGroupEdge(1)});
@@ -1818,6 +1821,7 @@ $('#rates').addEventListener('click',function(e){
 $('#flip').addEventListener('click',function(){S.flip=!S.flip;save();render()});
 $('#fold').addEventListener('click',function(){prefs.fold=!prefs.fold;savePrefs();render()});
 $('#zoombtn').addEventListener('click',function(){
+  if(prefs.zoom==='auto'&&cvDet){cvDet=false;clearTimeout(cvTm);renderTimeline();zoomUi();return}
   if(prefs.zoom==='auto'&&zDet){zDet=false;renderTimeline();zoomUi();return}
   var o=['all','auto','cuts','range'];prefs.zoom=o[(o.indexOf(prefs.zoom||'all')+1)%4];zDet=false;savePrefs();render();
 });
@@ -2083,12 +2087,22 @@ function endTl(e,cancel){
   render();
 }
 tlEl.addEventListener('wheel',function(e){
+  if(customView()&&prefs.zoom==='auto'&&zInfo){
+    /* 커스텀 막대: 휠로 창을 훑어보고, 5초 뒤 또는 클릭하면 재생 위치(흰 선) 기준으로 돌아온다 */
+    e.preventDefault();
+    var Lw=zInfo.L,base=cvDet?cvC:cvLastC,dy=Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:e.deltaX;
+    cvC=Math.max(Lw/2,Math.min(cvTotal-Lw/2,base+dy/100*Lw*0.5));
+    cvDet=true;clearTimeout(cvTm);
+    cvTm=setTimeout(function(){cvDet=false;renderTimeline();zoomUi()},5000);
+    renderTimeline();zoomUi();return;
+  }
   if(prefs.zoom!=='auto'||!zInfo||customView())return;
   if(!(e.shiftKey||Math.abs(e.deltaX)>Math.abs(e.deltaY)))return;
   e.preventDefault();
   var dx=Math.abs(e.deltaX)>0?e.deltaX:e.deltaY;
   zC=panCenter(zDet?zC:curTime(),dx/(tlEl.clientWidth||600));zDet=true;renderTimeline();zoomUi();
 },{passive:false});
+tlEl.addEventListener('pointerdown',function(){if(cvDet){cvDet=false;clearTimeout(cvTm)}},true);
 tlEl.addEventListener('pointerup',function(e){endTl(e,false)});
 tlEl.addEventListener('pointercancel',function(e){endTl(e,true)});
 window.addEventListener('resize',function(){if(S&&dur)renderTimeline()});
@@ -2406,8 +2420,10 @@ $('#bmimport').addEventListener('click',function(){
 /* 구간 목록 단축키: 구간 목록 카드를 마지막으로 눌렀을 때만 켜진다 */
 var listActive=false,lastArrow={k:'',t:0};
 document.addEventListener('pointerdown',function(e){
-  var card=listEl.closest('section');
-  listActive=!!(card&&card.contains(e.target));
+  var card=listEl.closest('section'),stg=document.querySelector('.stage.card'),tg=e.target;
+  /* 키보드 대상: 구간 목록 카드를 누르면 구간 목록, 컷 편집 쪽(영상 제외)을 누르면 컷 편집. 영상 화면·다른 곳은 직전 그대로 */
+  if(card&&card.contains(tg))listActive=true;
+  else if(stg&&stg.contains(tg)&&!(tg.closest&&tg.closest('#pslot')))listActive=false;
   if(e.target.closest&&e.target.closest('.item'))navAnchor=null;
   markActive();
 },true);
@@ -2505,6 +2521,7 @@ document.addEventListener('keydown',function(e){
     return;
   }
   if(e.metaKey||e.altKey)return;
+  if(e.key==='Tab'&&!e.shiftKey){e.preventDefault();listActive=!listActive;markActive();toast('키보드 대상: '+(listActive?'구간 목록':'컷 편집'));return}
   if(listActive&&!e.shiftKey&&listKey(e)){e.preventDefault();return}
   if(e.key==='m'||e.key==='M'||e.key==='ㅡ'){e.preventDefault();mark()}
   else if(e.key===' '){e.preventDefault();$('#pp').click()}
